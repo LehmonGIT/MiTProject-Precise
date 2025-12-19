@@ -1,0 +1,576 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+    :root {
+        --c1: #eb7f22;
+        --c2: #e48e41;
+        --c3: #1a9dd7;
+        --c4: #51b74b;
+        --c5: #f0f9f5;
+        --c8: #b5dfed;
+    }
+
+    .product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    }   
+
+    .header-actions {
+    display: flex;
+    gap: 10px;
+    }
+
+    .btn-red {
+        background: #eb7f22;
+    }
+
+
+
+    .product-card {
+        display: flex;
+        gap: 25px;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        margin-top: 22px;
+        border-left: 5px solid #1a9dd7;
+    }
+
+    .product-img {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+    }
+
+    .product-info {
+        flex: 1;
+    }
+
+    .details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .details-table td {
+        padding: 7px 10px;
+        border-bottom: 1px solid #e8e8e8;
+        font-size: 14px;
+    }
+
+    .details-table td:first-child {
+        font-weight: bold;
+        color: #1a9dd7;
+        width: 180px;
+    }
+
+    .btn-area {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-main {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: white;
+    }
+
+    .btn-blue {
+        background: #51b74b;
+    }
+
+    .btn-orange {
+        background: #1a9dd7;
+    }
+
+    h2 {
+        color: #1a9dd7;
+        margin-bottom: 10px;
+    }
+
+    .btn-blue2 {
+    background: #1a9dd7 !important;
+    }
+
+    .btn-blue2:hover:not(:disabled) {
+        background: #0f8ec3 !important;
+    }
+    
+    .slide-section {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    background: #ffffff;
+    margin-top: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    padding: 0 25px;
+    }
+
+    .slide-section.open {
+        max-height: 500px;
+        padding: 25px;
+    }
+
+    .slide-section h3 {
+        color: #1a9dd7;
+        margin-bottom: 10px;
+    }
+
+    .doc-plain {
+        width: 70%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        font-size: 14px;
+        border: 1.5px solid #1a9dd7;   /* กรอบนอก */
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* header */
+    .doc-plain thead th {
+        padding: 10px 12px;
+        text-align: center;
+        font-weight: 600;
+        color:  #1a9dd7;
+        border-bottom: 5px solid  #1a9dd7;  /* เส้นหัวตาราง */
+    }
+
+    .doc-plain td {
+        padding: 9px 12px;
+        text-align: center;
+        font-weight: 400;
+        border-bottom: 1px solid #e3eaf1;
+    }
+
+    .doc-plain th:not(:last-child),
+    .doc-plain td:not(:last-child) {
+        border-right: 1px solid #e3eaf1;
+    }
+
+    .doc-plain tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .doc-type {
+        text-align: left;
+        font-weight: 600;
+        /* color: #1a9dd7; */
+    }
+  
+    .status-dot {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #ccc;
+    }
+
+    /* สีสถานะ */
+    .status-green {
+        background: #51b74b;
+        border-color: #51b74b;
+    }
+
+    .status-orange {
+        background: #fa6d09;
+        border-color: #fa6d09
+    }
+
+    .status-red {
+        background: #e74c3c;
+        border-color: #e74c3c;
+    }
+    .status-yellow {
+    background: #f1c40f;      
+    border-color: #f1c40f;
+    }
+    .status-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .status-text {
+        font-size: 12px;
+        color: #555;
+        white-space: nowrap;
+    }
+
+    /* ===== DELETE MODAL ===== */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: #ffffff;
+        padding: 28px;
+        border-radius: 14px;
+        width: 400px;
+        text-align: center;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        font-family: "Prompt", sans-serif;
+    }
+
+    .modal-box h3 {
+        color: #e74c3c;
+        margin-bottom: 14px;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 22px;
+    }
+
+    .btn-confirm {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .btn-cancel {
+        background: #bdc3c7;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+</style>
+
+<div class="product-header">
+    <h2>{{ product.product }}</h2>
+
+    <div class="header-actions">
+        {% if session.role in ["editor","admin"] %}
+        <a href="/product/{{ product.id }}/edit">
+            <button class="btn-main btn-blue">Edit</button>
+        </a>
+        {% endif %}
+
+        {% if session.role in ["admin"] %}
+        <button class="btn-main btn-red" onclick="confirmDelete({{ product.id }})">
+            Delete
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>ยืนยันการลบข้อมูล</h3>
+
+        <p>
+            ต้องการลบผลิตภัณฑ์<br>
+            <strong>{{ product.product }}</strong><br>
+            จริงหรือไม่ ?
+        </p>
+
+        <div class="modal-actions">
+            <button class="btn-confirm" onclick="doDelete()">ใช่, ลบ</button>
+            <button class="btn-cancel" onclick="closeDelete()">ยกเลิก</button>
+        </div>
+    </div>
+</div>
+
+<div class="product-card">
+
+    <!-- รูปสินค้า -->
+    <img src="{{ product.image_url or '/static/1pole.png' }}" class="product-img">
+ 
+    
+    <div class="product-info"> 
+
+        <table class="details-table">
+
+            <tr>
+                <td>Company</td>
+                <td>{{ product.company }}</td>
+            </tr>
+            <tr>
+                <td>Business</td>
+                <td>{{ product.business }}</td>
+            </tr>
+            <tr>
+                <td>Core Product</td>
+                <td>{{ product.product }}</td>
+            </tr>
+            <tr>
+                <td>FG Code</td>
+                <td>{{ product.code }}</td>
+            </tr>
+            <tr>
+                <td>ประเภทผลิตภัณฑ์</td>
+                <td>{{ product.type }}</td>
+            </tr>
+            <tr>
+                <td>รายละเอียดผลิตภัณฑ์</td>
+                <td>{{ product.descrip }}</td>
+            </tr>
+            <tr>
+                <td>ขนาดผลิตภัณฑ์ (กว้างXยาวXสูง)</td>
+                <td>{{ product.size }}</td>
+            </tr>
+            <tr>
+                <td>สีผลิตภัณฑ์</td>
+                <td>{{ product.color }}</td>
+           
+
+        </table>
+
+        <!-- ปุ่มใช้งาน -->
+       
+    </div>
+
+</div>
+
+<div class="btn-area">
+
+    <button class="btn-main btn-blue2" onclick="toggleSection('saleDocs')">
+        Sale Documents
+    </button>
+
+    <button class="btn-main btn-orange" onclick="toggleSection('regDocs')">
+        Regulation Documents
+    </button>
+
+    <!-- <button class="btn-main btn-orange" onclick="window.print()">Print</button> -->
+    <!-- </div> -->
+
+</div>
+
+<div id="regDocs" class="slide-section">
+    <!-- <h3>Regulation Documents</h3> -->
+  
+
+    <table class="doc-plain">
+        <colgroup>
+            <col style="width: 5%;"> 
+            <col style="width: 5%;"> <!-- Number -->
+            <col style="width: 5%;"> <!-- Issue Date -->
+            <col style="width: 5%;"> <!-- Due Date -->
+            <col style="width: 5%;">
+        </colgroup>
+
+        <thead>
+            <tr>
+                <th>Regulation Documents</th>
+                <th>Number</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="doc-type">MiT</td>
+                <td>{{ product.mit }}</td>
+                <td>{{ product.mit_issue }}</td>
+                <td class="due-date"  data-due="{{ product.mit_due }}">
+                    {{ product.mit_due }}
+                </td>
+            
+                <td class="status-cell">
+                    <div class="status">
+                        <span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td class="doc-type">มอก.</td>
+                <td>{{ product.TIS }}</td>
+                <td>{{ product.TIS_issue }}</td>
+                <td>{{ product.TIS_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">สมอ.</td>
+                <td>{{ product.TISI }}</td>
+                <td>{{ product.TISI_issue }}</td>
+                <td>{{ product.TISI_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">CFP</td>
+                <td>{{ product.CFP }}</td>
+                <td>{{ product.CFP_issue }}</td>
+                <td>{{ product.CFP_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">CFO</td>
+                <td>{{ product.CFO }}</td>
+                <td>{{ product.CFO_issue }}</td>
+                <td>{{ product.CFO_due }}</td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<div id="saleDocs" class="slide-section">
+    <!-- <h3>Sale Documents</h3> -->
+
+    <table class="doc-plain">
+        <colgroup>
+            <col style="width: 5%;"> 
+            <col style="width: 5%;"> <!-- Number -->
+            <col style="width: 5%;"> <!-- Issue Date -->
+            <col style="width: 5%;"> <!-- Due Date -->
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Sale Documents</th>
+                <th>Number</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="doc-type">FactSheet</td>
+                <td>{{ product.factsheet }}</td>
+                <td>{{ product.factsheet_issue }}</td>
+                <td>{{ product.factsheet_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Technical Data</td>
+                <td>{{ product.tech }}</td>
+                <td>{{ product.tech_issue }}</td>
+                <td>{{ product.tech_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Outline</td>
+                <td>{{ product.outline }}</td>
+                <td>{{ product.outline_issue }}</td>
+                <td>{{ product.outline_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Type Test1</td>
+                <td>{{ product.tt1 }}</td>
+                <td>{{ product.tt1_issue }}</td>
+                <td>{{ product.tt1_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Type Test2</td>
+                <td>{{ product.tt2 }}</td>
+                <td>{{ product.tt2_issue }}</td>
+                <td>{{ product.tt2_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Type Test3</td>
+                <td>{{ product.tt3 }}</td>
+                <td>{{ product.tt3_issue }}</td>
+                <td>{{ product.tt3_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Type Test4</td>
+                <td>{{ product.tt4 }}</td>
+                <td>{{ product.tt4_issue }}</td>
+                <td>{{ product.tt4_due }}</td>
+            </tr>
+            <tr>
+                <td class="doc-type">Type Test5</td>
+                <td>{{ product.tt5 }}</td>
+                <td>{{ product.tt5_issue }}</td>
+                <td>{{ product.tt5_due }}</td>
+            </tr>
+            
+        </tbody>
+    </table>
+</div>
+
+
+
+<script>
+    let deleteId = null;
+
+    function confirmDelete(id) {
+        deleteId = id;
+        document.getElementById("deleteModal").style.display = "flex";
+    }
+
+    function closeDelete() {
+        deleteId = null;
+        document.getElementById("deleteModal").style.display = "none";
+    }
+
+    function doDelete() {
+        if (!deleteId) return;
+        window.location.href = `/product/${deleteId}/delete`;
+    }
+
+    
+    function toggleSection(id) {
+        const section = document.getElementById(id);
+        section.classList.toggle("open");
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const cells = document.querySelectorAll(".due-date");
+
+        cells.forEach(cell => {
+            const dueStr = cell.dataset.due;
+            if (!dueStr) return;
+
+            const dueDate = new Date(dueStr + "T00:00:00");
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // คำนวณวันที่เหลือ
+            const remainDays = Math.ceil(
+                (dueDate - today) / (1000 * 60 * 60 * 24)
+            );
+            
+            const row = cell.closest("tr");
+            const statusDot = row.querySelector(".status-dot");
+            const statusText = row.querySelector(".status-text");
+    
+
+            if (remainDays <= 0) {
+                statusDot.classList.add("status-red");
+                statusText.textContent = "หมดอายุแล้ว";
+                return
+            }
+            // กำหนดสีจากจำนวนวัน
+            if (remainDays <= 60) {
+                statusDot.classList.add("status-orange");
+            } else if (remainDays <= 120) {
+                statusDot.classList.add("status-yellow");
+            } else {
+                statusDot.classList.add("status-green");
+            }
+            statusText.textContent = `เหลือ ${remainDays} วัน`;
+        });
+    });
+
+
+
+
+</script>
+
+{% endblock %}

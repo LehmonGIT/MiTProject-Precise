@@ -1,0 +1,437 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
+    body {
+    font-family: 'Sarabun', system-ui, sans-serif;
+    }
+    
+
+        /* zebra rows */
+    tbody tr:nth-child(even) {
+        background: #ffffff;
+    }
+
+    tbody tr:nth-child(odd) {
+        background: #ffffff;
+    }
+
+    /* header shadow */
+    thead th {
+        box-shadow: inset 0 -1px 0 rgba(255,255,255,0.25);
+    }
+
+    #productTable th,
+    #productTable td {
+        text-align: center;        /* กึ่งกลางแนวนอน */
+        vertical-align: middle;    /* กึ่งกลางแนวตั้ง */
+    }
+    #productTable td.text-left {
+    text-align: left !important;
+    }
+
+    :root {
+        --c1: #eb7f22;
+        --c2: #e48e41;
+        --c3: #1a9dd7;
+        --c4: #51b74b;
+        --c5: #f0f9f5;
+        --c8: #b5dfed;
+    }
+
+    .clickable-row {
+        cursor: default;
+        transition: background 0.15s ease;
+    }
+
+    .clickable-row:hover {
+        background: var(--c8);
+    }
+ 
+
+    table {
+        table-layout: fixed;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* table */
+    .table-container {
+        background: var(--c5);
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    /* Header */
+    th {
+        background: var(--c3);
+        color: white;
+        padding: 6px 8px;
+        position: sticky;
+        top: 0;
+        cursor: pointer;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    th,
+    td {
+        
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Rows */
+    td {
+        padding: 5px 8px;
+        border-bottom: 1px solid #e6e6e6;
+        font-size: 13px;
+    }
+
+    tr:hover {
+        background: var(--c8);
+    }
+
+    /* Filter */
+    select.filter {
+        width: 100%;
+        padding: 2px 4px;
+        margin-top: 2px;
+        border-radius: 4px;
+        font-size: 12px;
+        height: 26px;
+        box-sizing: border-box;
+    }
+
+    /* Search Box */
+    .search-box {
+        width: 200px;
+        height: 30px;
+        font-size: 13px;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .pagination {
+        margin-top: 8px;
+        display: flex;
+        justify-content: flex-end;   /* ⭐ ชิดขวา */
+        align-items: center;
+        font-size: 13px;
+        gap: 4px;                   
+    }
+    /* Pagination buttons */
+    .pagination button {
+        padding: 6px 12px;
+        margin: 0 3px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        background: var(--c3);
+        color: white;
+        transition: 0.2s;
+    }
+
+    /* hover */
+    .pagination button:hover {
+        background: #0f8ec3;
+    }
+
+    /* active page */
+    .pagination button.active {
+        background: var(--c1);
+    }
+
+    /* disabled */
+    .pagination button:disabled {
+        background: #cccccc;
+        cursor: not-allowed;
+    }
+
+
+    /* ADD button */
+    .btn-add {
+        background: var(--c4);
+        border: none;
+        padding: 8px 16px;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-add:hover {
+        background: #3e9c3d;
+    }
+
+    .btn {
+        border: none;
+        padding: 8px 16px;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    /* Excel button */
+    .btn-excel {
+        background: var(--c3);
+    }
+
+    .btn-excel:hover {
+        background: #0f8ec3;
+    }
+
+    /* PDF button */
+    .btn-pdf {
+        background: var(--c1);
+    }
+
+    .btn-pdf:hover {
+        background: #cf6f1c;
+    }
+
+    .show-count {
+    margin-top: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-start;   /* ⭐ ซ้ายล่าง */
+    }
+
+    .btn-back {
+    background: var(--c2);
+    border: none;
+    padding: 8px 16px;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+    }
+
+    .btn-back:hover {
+        background: #c57832;
+    }
+    
+    .page-container {
+    max-width: 1400px; /* ปรับได้ 1100–1400 */
+    margin: 30px auto; /*  กึ่งกลางแนวนอน */
+    padding: 20 50px;
+    }
+</style>
+
+<div class="page-container">
+
+    <div class="table-container">
+
+        <!-- Header -->
+        
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="color:var(--c3)">Product List</h2>
+            
+                <input id="searchInput" onkeyup="globalSearch()" placeholder="Search..."
+                style="padding:8px; margin-left:50px; border:2px solid var(--c4); border-radius:10px;">
+                
+            <div>
+                <button class="btn btn-excel" onclick="exportExcel()">Export Excel</button>
+                <button class="btn btn-pdf" onclick="exportPDF()">Export PDF</button>
+
+                {% if session.role in ["editor","admin"] %}
+                <a href="{{ url_for('add') }}">
+                    <button class="btn-add">Add Product</button>
+                </a>
+
+
+                {% endif %}
+                
+            </div>
+        </div>
+
+        <!-- Table -->
+        <table id="productTable">
+            <colgroup>
+                <col style="width:50px"> <!-- ID -->
+                <col style="width:80px"> <!-- Company -->
+                <col style="width:90px"> <!-- Business -->
+                <col style="width:300px"> <!-- Core Product -->
+                <col style="width:100px"> <!-- FG Code -->
+                <col style="width:100px"> <!-- Product Type -->
+                <col style="width:140px"> <!-- MiT -->
+                <col style="width:60px"> <!-- ISO -->
+                <col style="width:60px"> <!-- มอก -->
+                <col style="width:60px"> <!-- สมอ -->
+                <col style="width:80px"> <!-- Type test -->
+                <col style="width:80px"> <!-- Factsheet -->
+            </colgroup>
+
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">ID</th>
+                    <th onclick="sortTable(1)">Company</th>
+                    <th onclick="sortTable(2)">Business</th>
+                    <th onclick="sortTable(3)">Core Product</th>
+                    <th onclick="sortTable(4)">FG Code</th>
+                    <th onclick="sortTable(5)">Product Type</th>
+                    <th onclick="sortTable(6)">MiT</th>
+                    <th onclick="sortTable(9)">ISO</th>
+                    <th onclick="sortTable(11)">มอก.</th>
+                    <th onclick="sortTable(12)">สมอ.</th>
+                    <th onclick="sortTable(10)">Type test</th>
+                    <th onclick="sortTable(8)">Factsheet</th>
+                   
+            
+                </tr>
+            </thead>
+
+            <tbody id="tableBody">
+                {% for p in products %}
+                <tr class="clickable-row" data-href="/product/{{ p.id }}">
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.company }}</td>
+                    <td>{{ p.business }}</td>
+                    <td class="text-left">{{ p.product }}</td>
+                    <td>{{ p.code }}</td>
+                    <td>{{ p.type }}</td>
+                    <td>{{ p.mit }}</td>
+                    <td>{{ p.ISO }}</td>
+                    <td>{{ p.TIS }}</td>
+                    <td>{{ p.TISI }}</td>
+                    <td>{{ p.test }}</td>
+                    <td>{{ p.factsheet }}</td>
+                </tr>
+                {% endfor %} 
+            </tbody>
+
+        </table>
+
+        <div class="show-count">
+            Display
+            <select id="rowsPerPage" onchange="changePageSize()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            Items
+        </div>
+        
+        <div class="pagination">
+            <div id="paginationNumbers"></div>
+        </div>
+
+
+    </div>
+
+</div>
+
+<script>
+
+    function globalSearch() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.querySelectorAll("#tableBody tr");
+        rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(input) ? "" : "none");
+    }
+
+    let sortDir = true;
+    function sortTable(n) {
+        let table = document.getElementById("productTable");
+        let switching = true;
+
+        while (switching) {
+            switching = false;
+            let rows = table.rows;
+
+            for (let i = 2; i < rows.length - 1; i++) {
+                let shouldSwitch = false;
+                let x = rows[i].getElementsByTagName("td")[n];
+                let y = rows[i + 1].getElementsByTagName("td")[n];
+
+                if (sortDir ? (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase())
+                    : (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase())) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+        sortDir = !sortDir;
+    }
+
+    
+    let rows = document.querySelectorAll("#tableBody tr");
+    let rowsPerPage = 10;
+    let currentPage = 1;
+
+    function paginate() {
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+
+        rows.forEach((row, i) => {
+            row.style.display = (i >= start && i < end) ? "" : "none";
+        });
+        updatePaginationNumbers();
+    }
+
+    function updatePaginationNumbers() {
+        let totalPages = Math.ceil(rows.length / rowsPerPage);
+        let container = document.getElementById("paginationNumbers");
+        container.innerHTML = "";
+
+        for (let i = 1; i <= totalPages; i++) {
+            let btn = `<button onclick="goToPage(${i})"
+                        style="margin:0 3px; padding:5px 10px; border-radius:4px;
+                        background:${i === currentPage ? 'var(--c3)' : '#ddd'};
+                        color:${i === currentPage ? 'white' : 'black'};">${i}</button>`;
+            container.innerHTML += btn;
+        }
+    }
+
+    function goToPage(n) { currentPage = n; paginate(); }
+    function changePageSize() {
+        rowsPerPage = document.getElementById("rowsPerPage").value;
+        paginate();
+    }
+
+    paginate();
+
+   
+    function exportExcel() {
+        const table = document.getElementById("productTable").outerHTML;
+        const blob = new Blob([table], { type: "application/vnd.ms-excel" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "products.xls";
+        a.click();
+    }
+
+  
+    function exportPDF() {
+        window.print(); 
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".clickable-row").forEach(row => {
+                row.addEventListener("click", () => {
+                    window.location = row.dataset.href;
+                });
+            });
+        });
+
+</script>
+
+{% endblock %}

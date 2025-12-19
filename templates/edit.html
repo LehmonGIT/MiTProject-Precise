@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+    .edit-card {
+        display: flex;
+        gap: 25px;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        margin-top: 22px;
+        border-left: 5px solid #51b74b;
+    }
+
+    .edit-img {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+    }
+
+    .edit-form {
+        flex: 1;
+    }
+
+    .edit-form table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .edit-form td {
+        padding: 7px 10px;
+        font-size: 14px;
+    }
+
+    .edit-form td:first-child {
+        font-weight: bold;
+        color: #1a9dd7;
+        width: 180px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    textarea {
+        height: 80px;
+    }
+
+    .btn-area {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-main {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: white;
+    }
+
+    .btn-green {
+        background: #51b74b;
+    }
+
+    .btn-red {
+        background: #eb7f22;
+    }
+
+    h2 {
+        color: #1a9dd7;
+    }
+</style>
+
+<h2>Editing: {{ product.product }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="edit-card">
+
+        <!-- รูป -->
+        <div>
+            <img src="{{ product.image_url or '/static/no-image.png' }}" class="edit-img">
+            <br><br>
+            <label>เปลี่ยนรูปภาพ:</label>
+            <input type="file" name="image">
+        </div>
+
+
+        <!-- ฟอร์มแก้ไข -->
+        <div class="edit-form">
+           
+            <table>
+        
+                <tr>
+                    <td>Company</td>
+                    <td><input type="text" name="company" value="{{ product.company }}"></td>
+                </tr>
+                <tr>
+                    <td>Business</td>
+                    <td><input type="text" name="business" value="{{ product.business }}"></td>
+                </tr>
+                <tr>
+                    <td>Core Product</td>
+                    <td><input type="text" name="product" value="{{ product.product }}"></td>
+                </tr>
+                <tr>
+                    <td>FG Code</td>
+                    <td><input type="text" name="code" value="{{ product.code }}"></td>
+                </tr>
+                <tr>
+                    <td>Product Type</td>
+                    <td><input type="text" name="type" value="{{ product.type }}"></td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td><textarea name="descrip">{{ product.descrip }}</textarea></td>
+                </tr>
+                <tr>
+                    <td>Production Size</td>
+                    <td><input type="text" name="size" value="{{ product.size }}"></td>
+                </tr>
+                <tr>
+                    <td>Production Color</td>
+                    <td><input type="text" name="color" value="{{ product.color }}"></td>
+                </tr>
+                <tr>
+                    <td>MiT</td>
+                    <td><input type="text" name="mit" value="{{ product.mit }}"></td>
+                </tr>
+                <tr>
+                    <td>วันหมดอายุ</td>
+                    <td><input type="date" name="expdate" value="{{ product.expdate }}"></td>
+                </tr>
+                <tr>
+                    <td>Factsheet URL</td>
+                    <td><input type="text" name="factsheet" value="{{ product.factsheet }}"></td>
+                </tr>
+                <tr>
+                    <td>ISO</td>
+                    <td><input type="text" name="ISO" value="{{ product.ISO }}"></td>
+                </tr>
+                <tr>
+                    <td>Routine Test</td>
+                    <td><input type="text" name="test" value="{{ product.test }}"></td>
+                </tr>
+                <tr>
+                    <td>มอก.</td>
+                    <td><input type="text" name="TIS" value="{{ product.TIS }}"></td>
+                </tr>
+                <tr>
+                    <td>สมอ.</td>
+                    <td><input type="text" name="TISI" value="{{ product.TISI }}"></td>
+                </tr>
+                <tr>
+                    <td>Production Model</td>
+                    <td><input type="text" name="productmodel" value="{{ product.productmodel }}"></td>
+                </tr>
+
+            </table>
+
+            <div class="btn-area">
+                <button class="btn-main btn-green" type="submit">Save</button>
+
+                <a href="/product/{{ product.id }}">
+                    <button type="button" class="btn-main btn-red">Cancel</button>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,138 @@
+
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login</title>
+</head>
+
+<body>
+    <h2>Login Page</h2>
+    <form method="post">
+        <input name="username" placeholder="username">
+        <input name="password" type="password" placeholder="password">
+        <button type="submit">Login</button>
+    </form>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+
+    <style>
+        :root {
+            --c1: #eb7f22;
+            --c2: #e48e41;
+            --c3: #1a9dd7;
+            --c4: #51b74b;
+            --c5: #f0f9f5;
+            --c8: #b5dfed;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--c5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-box {
+            background: #ffffff;
+            width: 360px;
+            padding: 35px 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            border-left: 6px solid var(--c4);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--c3);
+            margin-bottom: 25px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 1px solid #dcdcdc;
+            font-size: 14px;
+            transition: border 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: var(--c3);
+            outline: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 10px;
+            background: var(--c1);
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-login:hover {
+            background: var(--c2);
+        }
+
+        .error-box {
+            background: #ffdddd;
+            border-left: 4px solid #ff5c5c;
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #a10000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-box">
+
+        <h2>Login</h2>
+
+        {% if error %}
+        <div class="error-box">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            <input name="username" class="input-field" placeholder="Username">
+            <input name="password" type="password" class="input-field" placeholder="Password">
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+
+    </div>
+
+</body>
+
+</html>

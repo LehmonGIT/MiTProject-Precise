@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Product System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        :root {
+            --c1: #eb7f22;
+            --c2: #e48e41;
+            --c3: #1a9dd7;
+            --c4: #51b74b;
+            --c5: #f0f9f5;
+            --c8: #b5dfed;
+            --nav-dark: #1a9dd7;
+            /* แถบบน */
+        }
+        #productTable {
+        cursor: none;
+        }
+
+       button,
+        input,
+        select,
+        textarea,
+        .btn,
+        .btn-add {
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        body {
+            /* cursor: none; */
+            margin: 0;
+            font-family: "Prompt", sans-serif;
+             background:  #b5dfed;
+        }
+    
+        /* ===== TOP BAR ===== */
+        .top-utility {
+            background: var(#b5dfed);
+            height: 30px;
+        }
+    
+        .top-utility-inner {
+            max-width: 1300px;
+            margin: auto;
+            height: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 20px;
+            gap: 10px;
+        }
+    
+        .top-utility a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    
+        /* ===== MAIN NAV ===== */
+        .main-nav {
+            background: white;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+    
+        .main-nav-inner {
+            max-width: 1300px;
+            margin: auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    
+        /* Logo */
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+    
+        .logo-area img {
+            height: 40px;
+            /* ปรับขนาด โลโก้ */
+        }
+    
+        .logo-text {
+            font-weight: 600;
+            color: #000;
+            line-height: 1.2;
+        }
+    
+        .logo-text small {
+            display: block;
+            font-weight: 400;
+            font-size: 13px;
+            color: #555;
+        }
+    
+        /* Menu */
+        .nav-menu {
+            display: flex;
+            gap: 28px;
+        }
+    
+        .nav-menu a {
+            text-decoration: none;
+            font-weight: 500;
+            color: #000;
+            padding-bottom: 6px;
+            position: relative;
+        }
+    
+        .nav-menu a:hover {
+            color: var(--c3);
+        }
+    
+        .nav-menu a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 3px;
+            background: var(--c3);
+            transition: 0.25s;
+        }
+    
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+    
+        /* User info */
+        .user-info {
+            font-size: 14px;
+            color: #555;
+        }
+    
+           /* ===== PAGE CONTENT ===== */
+        .page-wrapper {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+        } 
+        
+
+      
+
+
+    </style>
+
+
+
+
+
+</head>
+
+
+<body>
+   
+
+    <!-- TOP BAR social-->
+    <div class="top-utility">
+        <div class="top-utility-inner">
+            <!-- <a href="#">Facebook</a>
+            <a href="#">LINE</a>
+            <a href="#">YouTube</a> -->
+        </div>
+    </div>
+
+    <!-- MAIN NAV -->
+    <div class="main-nav">
+        <div class="main-nav-inner">
+    
+            <!-- Logo -->
+            <div class="logo-area">
+            
+                <img src="/static/logonotext.png" alt="Logo">
+
+                <div class="logo-text">
+                    Product of PEM
+                    <small>Precise Electric Manufacturing Co., Ltd.</small>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <div class="nav-menu">
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
+                <a href="/products">Product List</a>
+                <a href="#">User Manual</a>
+                <a href="#">Contact Us</a>
+            </div>
+
+            <!-- User -->
+            {% if session.user %}
+            <div class="user-info">
+                {{ session.user }} ({{ session.role }})
+            </div>
+            {% endif %}
+            
+            </div>
+            </div>
+    </div>
+        
+        <!-- CONTENT -->
+    <div class="page-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+        
+</body>
+        
+</html>
+
