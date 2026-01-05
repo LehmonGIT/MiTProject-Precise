@@ -205,6 +205,13 @@ def delete_product(id):
     conn.close()
     return redirect(url_for("products"))
 
+@app.route("/env-test")
+def env_test():
+    return {
+        "DATABASE_URL": bool(os.environ.get("DATABASE_URL"))
+    }
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
