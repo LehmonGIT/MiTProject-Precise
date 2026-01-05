@@ -205,11 +205,12 @@ def delete_product(id):
     conn.close()
     return redirect(url_for("products"))
 
-@app.route("/env-test")
-def env_test():
-    return {
-        "DATABASE_URL": bool(os.environ.get("DATABASE_URL"))
-    }
+
+# @app.route("/env-test")
+# def env_test():
+#     return {
+#         "DATABASE_URL": bool(os.environ.get("DATABASE_URL"))
+#     }
 
 
 if __name__ == "__main__":
