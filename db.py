@@ -2,11 +2,9 @@ import os
 import psycopg2
 
 def get_db():
-    conn = psycopg2.connect(
-        host=os.environ.get("DB_HOST"),
-        database=os.environ.get("DB_NAME"),
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASS"), 
-        port=os.environ.get("DB_PORT")
-    )
-    return conn
+    database_url = os.environ.get("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError("DATABASE_URL not set")
+
+    return psycopg2.connect(database_url)
