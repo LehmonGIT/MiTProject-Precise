@@ -24,21 +24,29 @@ def home():
 @app.route("/products")
 @login_required
 def products():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products ORDER BY id DESC")
-    products = cur.fetchall()
+    try:
 
-    colnames = [desc[0] for desc in cur.description]
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM products ORDER BY id DESC")
+        products = cur.fetchall()
 
-    cur.close()
-    conn.close()
+        colnames = [desc[0] for desc in cur.description]
 
-    # แปลงเป็น dict
-    products = [dict(zip(colnames, row)) for row in products]
+        cur.close()
+        conn.close()
 
-    return render_template("products.html", products=products)
+        # แปลงเป็น dict
+        products = [dict(zip(colnames, row)) for row in products]
 
+        return render_template("products.html", products=products)
+    except Exception as e:
+        return f"""
+        <h2>Tnternal Error</h2>
+        <pre>{str(e)}</pre>
+        """,500
+        
+    
 
 @app.route("/products/import", methods=["POST"])
 @login_required
