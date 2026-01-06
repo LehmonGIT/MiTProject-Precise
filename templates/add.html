@@ -91,19 +91,94 @@
         border-radius: 8px;
         width: 100%;
     }
+    /* ส่วนของอัพไฟล์ */
+
+    .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+
+    /* modal box */
+    .modal-box {
+        background: var(--c5);     
+        padding: 25px 30px;
+        border-radius: 14px;
+        width: 360px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: pop 0.25s ease;
+    }
+
+    .modal-box h3 {
+        margin-bottom: 10px;
+    }
+
+    .modal-box input[type="file"] {
+        margin: 15px 0;
+        background: white;
+        padding: 6px;
+        border-radius: 6px;
+        width: 100%;
+    }
+
+    /* buttons */
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-upload {
+        background: #ffffff;
+        color: #b3261e;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid #fff;
+        color: white;
+        padding: 8px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    /* animation */
+    @keyframes pop {
+        from { transform: scale(0.9); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+
+
+
+
+
+
 </style>
 
 <div class="add-card">
     <h2>Add New Product</h2>
     
-    <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-        <button type="button" class="btn-save" onclick="showMode('csv')">
-            Import CSV
-        </button>
-        <button type="button" class="btn-save" style="background:var(--c4)" onclick="showMode('manual')">
-            Add Manual
-        </button>
-    </div>
+    <div id="csvModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>⚠ Import CSV</h3>
+    
+            <p>
+                กรุณาเลือกไฟล์ <b>.csv</b><br>
+                <span style="font-size:13px;color:#ffdede">
+                    (หัวตารางต้องตรงกับระบบ)
+                </span>
+            </p>
 
     <form id="csvForm" action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data"
         style="display:none;text-align: center;">
@@ -111,16 +186,29 @@
         <input type="file"
                name="csv_file"
                accept=".csv,.xlsx"
-               required
-               style="margin-bottom:15px;">
-        <br>
-    
-        <button type="submit"class="btn-save">
-            Upload 
-        </button>
+               required>
+
+        <div class="modal-actions">
+            <button type="submit" class="btn-upload">
+                Upload
+            </button>
+            <button type="button" class="btn-cancel" onclick="closeCsvModal()">
+                Cancel
+            </button>
+        </div>
+        
     </form>
 
 <script>
+
+    function openCsvModal() {
+        document.getElementById("csvModal").style.display = "flex";
+    }
+
+    function closeCsvModal() {
+        document.getElementById("csvModal").style.display = "none";
+    }
+
     function showMode(mode) {
         document.getElementById("csvForm").style.display =
             mode === "csv" ? "block" : "none";
