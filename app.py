@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, session, request, f
 from auth import auth_bp
 from decorators import login_required, role_required
 import csv
-import io
+from io import TextIOWrapper
 from db import get_db
 
 app = Flask(__name__)
@@ -47,75 +47,76 @@ def products():
         """,500
         
     
-# กลับมาแก้พรุ่งนี้
 @app.route("/products/import-csv", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
 def import_csv():
     file = request.files.get("csv_file")
 
-    if not file or file.filename =="":
-        flash("No CSV file seleced")
-        return redirect(url_for("products"))
+    if not file or file.filename == "":
+        flash("No CSV file selected")
+        return redirect(url_for("add"))
 
-    stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
-    reader = csv.DictReader(stream)
-
-    
-    print("IMPORT CSV CALLED")
-    print("HEADERS:", reader.fieldnames)
-
-    REQUIRED_COLS = { 
-        "company","business","product","code","type",
-        "mit","mit_issue","mit_due",
-        "factsheet","iso","test","tis","tisi",
-        "productmodel","descrip","size","color"
-    }
-
-    if not REQUIRED_COLS.issubset(reader.fieldnames):
-        return "CSV header ไม่ตรงกับระบบ", 400
+    if not file.filename.lower().endswith(".csv"):
+        flash("File must be CSV")
+        return redirect(url_for("add"))
 
     conn = get_db()
     cur = conn.cursor()
 
+    reader = csv.DictReader(
+        TextIOWrapper(file, encoding="utf-8-sig")
+    )
+
     for row in reader:
         cur.execute("""
-            INSERT INTO products
-            (company,business,product,code,type,
-             mit,mit_issue,mit_due,
-             factsheet,iso,test,tis,tisi,
-             productmodel,descrip,size,color)
-            VALUES (%s,%s,%s,%s,%s,
-                    %s,%s,%s,
-                    %s,%s,%s,%s,%s,
-                    %s,%s,%s,%s)
+            INSERT INTO products (
+                company,
+                business,
+                product,
+                code,
+                product_type,
+                mit,
+                mit_issue,
+                mit_due,
+                factsheet,
+                iso,
+                test,
+                tis,
+                tisi,
+                productmodel,
+                descrip,
+                size,
+                color
+            )
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (
-            row["company"],
-            row["business"],
-            row["product"],
-            row["code"],
-            row["type"],
-            row["mit"],
-            row["mit_issue"] or None,
-            row["mit_due"] or None,
-            row["factsheet"],
-            row["iso"],
-            row["test"],
-            row["tis"],
-            row["tisi"],
-            row["productmodel"],
-            row["descrip"],
-            row["size"],
-            row["color"],
+            row.get("company"),
+            row.get("business"),
+            row.get("product"),
+            row.get("code"),
+            row.get("product_type"),   
+            row.get("mit"),
+            row.get("mit_issue") or None,
+            row.get("mit_due") or None,
+            row.get("factsheet"),
+            row.get("iso"),
+            row.get("test"),
+            row.get("tis"),
+            row.get("tisi"),
+            row.get("productmodel"),
+            row.get("descrip"),
+            row.get("size"),
+            row.get("color"),
         ))
 
     conn.commit()
     cur.close()
     conn.close()
 
+       
+    flash("CSV imported successfully")
     return redirect(url_for("products"))
-
-
 
 
 @app.route("/product/<int:pid>")
