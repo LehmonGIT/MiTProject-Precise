@@ -181,7 +181,7 @@ def add():
 
         cur.execute("""
             INSERT INTO products
-            (company,business,product,code,type,
+            (company,business,product,code,product_type,
              mit,mit_issue,mit_due,
              factsheet,iso,test,tis,tisi,
              productmodel,descrip,size,color)
@@ -194,7 +194,7 @@ def add():
             request.form["business"],
             request.form["product"],
             request.form["code"],
-            request.form["type"],
+            request.form["product_type"],
             request.form["mit"],
             request.form["mit_issue"] or None,
             request.form["mit_due"] or None,
