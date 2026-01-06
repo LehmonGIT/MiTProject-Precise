@@ -55,92 +55,72 @@ def import_csv():
     print("IMPORT CSV CALLED")
     print("METHOD =", request.method)
 
-    if request.method == "POST" :
-        file = request.files.get("csv_file")
+    file = request.files.get("csv_file")
 
-        if not file or file.filename == "":
-            flash("No CSV file selected")
-            return redirect(url_for("add"))
+    if not file or file.filename == "":
+        flash("กรุณาเลือกไฟล์")
+        return redirect(url_for("add"))
 
-        if not file.filename.lower().endswith(".csv"):
-            flash("File must be CSV")
-            return redirect(url_for("add"))
+    if not file.filename.lower().endswith(".csv,.xlsx"):
+        flash("รอบรับไฟล์ CSV, xlsx")
+        return redirect(url_for("add"))
 
         # สร้าง reader ก่อน
-        reader = csv.DictReader(
-            TextIOWrapper(file, encoding="utf-8-sig")
-        )
+    reader = csv.DictReader(TextIOWrapper(file, encoding="utf-8-sig"))
 
         # ✅ debug header
-        print("CSV HEADERS:", reader.fieldnames)
+    print("CSV HEADERS:", reader.fieldnames)
 
-        REQUIRED_COLS = {
-            "company","business","product","code","product_type",
-            "mit","mit_issue","mit_due",
-            "factsheet","iso","test","tis","tisi",
-            "productmodel","descrip","size","color"
+    REQUIRED_COLS = {
+        "company","business","product","code","product_type",
+        "mit","mit_issue","mit_due",
+        "factsheet","iso","test","tis","tisi",
+        "productmodel","descrip","size","color"
         }
 
-        if not REQUIRED_COLS.issubset(reader.fieldnames):
-            return f"""
-            <h3>CSV header ไม่ตรง</h3>
-            <pre>{reader.fieldnames}</pre>
-            """, 400
+    if not REQUIRED_COLS.issubset(reader.fieldnames):
+        return f"""
+        <h3>CSV header ไม่ตรง</h3>
+        <pre>{reader.fieldnames}</pre>
+        """, 400
 
-        conn = get_db()
-        cur = conn.cursor()
+    conn = get_db()
+    cur = conn.cursor()
 
-        for row in reader:
-            print("ROW:", row)
+    for row in reader:
+        print("ROW:", row)
 
-            cur.execute("""
-                INSERT INTO products (
-                    company,
-                    business,
-                    product,
-                    code,
-                    product_type,
-                    mit,
-                    mit_issue,
-                    mit_due,
-                    factsheet,
-                    iso,
-                    test,
-                    tis,
-                    tisi,
-                    productmodel,
-                    descrip,
-                    size,
-                    color
-                )
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (
-                row.get("company"),
-                row.get("business"),
-                row.get("product"),
-                row.get("code"),
-                row.get("product_type"),
-                row.get("mit"),
-                row.get("mit_issue") or None,
-                row.get("mit_due") or None,
-                row.get("factsheet"),
-                row.get("iso"),
-                row.get("test"),
-                row.get("tis"),
-                row.get("tisi"),
-                row.get("productmodel"),
-                row.get("descrip"),
-                row.get("size"),
-                row.get("color"),
-            ))
+        cur.execute("""
+            INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
+                factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            row.get("company"),
+            row.get("business"),
+            row.get("product"),
+            row.get("code"),
+            row.get("product_type"),
+            row.get("mit"),
+            row.get("mit_issue") or None,
+            row.get("mit_due") or None,
+            row.get("factsheet"),
+            row.get("iso"),
+            row.get("test"),
+            row.get("tis"),
+            row.get("tisi"),
+            row.get("productmodel"),
+            row.get("descrip"),
+            row.get("size"),
+            row.get("color"),
+        ))
 
-        conn.commit()
-        cur.close()
-        conn.close()
+    conn.commit()
+    cur.close()
+    conn.close()
 
-        flash("CSV imported successfully")
-        return redirect(url_for("products"))
-    return render_template("import_csv.html")
+    flash("แนบไฟล์สำเร็จ")
+    return redirect(url_for("products"))
+    
 
 @app.errorhandler(500)
 def internal_error(e):

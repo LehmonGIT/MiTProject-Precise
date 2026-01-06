@@ -106,21 +106,29 @@
     </div>
 
     <form id="csvForm" action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data"
-        style="display:none;">
+        style="display:none;text-align: center;">
+
+        <input type="file"
+               name="csv_file"
+               accept=".csv,.xlsx"
+               required
+               style="margin-bottom:15px;">
+        <br>
     
-        <table>
-            <tr>
-                <td>CSV File</td>
-                <td>
-                    <input type="file" name="csv_file" accept=".csv,.xlsx" required class="file-input">
-                </td>
-            </tr>
-        </table>
-    
-        <button class="btn-save">Import CSV</button>
+        <button type="submit"class="btn-save">
+            Upload 
+        </button>
     </form>
 
+<script>
+    function showMode(mode) {
+        document.getElementById("csvForm").style.display =
+            mode === "csv" ? "block" : "none";
 
+        document.getElementById("manualForm").style.display =
+            mode === "manual" ? "block" : "none";
+    }
+</script>
     
     <form id="manualForm" method="POST" enctype="multipart/form-data">
 
