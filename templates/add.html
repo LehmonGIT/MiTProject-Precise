@@ -168,17 +168,6 @@
 
 <div class="add-card">
     <h2>Add New Product</h2>
-    
-    <div id="csvModal" class="modal-overlay">
-        <div class="modal-box">
-            <h3>⚠ Import CSV</h3>
-    
-            <p>
-                กรุณาเลือกไฟล์ <b>.csv</b><br>
-                <span style="font-size:13px;color:#ffdede">
-                    (หัวตารางต้องตรงกับระบบ)
-                </span>
-            </p>
 
     <form id="csvForm" action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data"
         style="display:none;text-align: center;">
@@ -196,7 +185,16 @@
                 Cancel
             </button>
         </div>
-        
+            <div id="csvModal" class="modal-overlay">
+                <div class="modal-box">
+                    <h3>⚠ Import CSV</h3>
+            
+                    <p>
+                        กรุณาเลือกไฟล์ <b>.csv</b><br>
+                        <span style="font-size:13px;color:#ffdede">
+            
+                        </span>
+                    </p>
     </form>
 
 <script>
