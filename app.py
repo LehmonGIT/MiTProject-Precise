@@ -1,9 +1,9 @@
 import os
-from flask import Flask, render_template, redirect, url_for, session, request
+from flask import Flask, render_template, redirect, url_for, session, request, flash
 from auth import auth_bp
 from decorators import login_required, role_required
 import csv
-import io
+from io import textIOwrapper
 from db import get_db
 
 app = Flask(__name__)
@@ -28,7 +28,7 @@ def products():
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM products ORDER BY id DESC")
+        cur.execute("SELECT * FROM products")
         products = cur.fetchall()
 
         colnames = [desc[0] for desc in cur.description]
@@ -47,30 +47,39 @@ def products():
         """,500
         
     
-
-@app.route("/products/import", methods=["POST"])
-@login_required
+# กลับมาแก้พรุ่งนี้
+@app.route("/products/import-csv", methods=["POST"])
+@login_required   
 @role_required(["editor", "admin"])
 def import_csv():
     file = request.files.get("csv_file")
-    if not file:
-        return redirect(url_for("products"))
 
-    stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
-    reader = csv.DictReader(stream)
+    if not file or file.filename =="":
+        flash("No CSV file selected")
+        return redirect(url_for("add"))
 
-    REQUIRED_COLS = {
-        "company","business","product","code","type",
-        "mit","mit_issue","mit_due",
-        "factsheet","iso","test","tis","tisi",
-        "productmodel","descrip","size","color"
-    }
-
-    if not REQUIRED_COLS.issubset(reader.fieldnames):
-        return "CSV header ไม่ตรงกับระบบ", 400
-
+    if not file.filename.lower().endswith(".csv"):
+        flash("File must be CSV")
+        return redirect(url_for("add"))
+     
     conn = get_db()
     cur = conn.cursor()
+
+    reader = csv.DictReader(textIOwrapper(file, encoding= "utf-8-sig"))
+    # stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
+    # reader = csv.DictReader(stream)
+
+    # REQUIRED_COLS = { 
+    #     "company","business","product","code","type",
+    #     "mit","mit_issue","mit_due",
+    #     "factsheet","iso","test","tis","tisi",
+    #     "productmodel","descrip","size","color"
+    # }
+
+    # if not REQUIRED_COLS.issubset(reader.fieldnames):
+    #     return "CSV header ไม่ตรงกับระบบ", 400
+
+
 
     for row in reader:
         cur.execute("""
@@ -107,6 +116,7 @@ def import_csv():
     cur.close()
     conn.close()
 
+    flash("csv imported successfully")
     return redirect(url_for("products"))
 
 
