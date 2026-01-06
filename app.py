@@ -51,6 +51,10 @@ def products():
 @login_required
 @role_required(["editor", "admin"])
 def import_csv():
+
+    print("IMPORT CSV CALLED")
+    print("METHOD =", request.method)
+    
     if request.method == "POST" :
         file = request.files.get("csv_file")
 
