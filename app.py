@@ -52,7 +52,6 @@ def products():
 @role_required(["editor", "admin"])
 def import_csv():
     file = request.files.get("csv_file")
-    print("CSV HEADERS:", reader.fieldnames)
 
     if not file or file.filename == "":
         flash("No CSV file selected")
@@ -62,15 +61,33 @@ def import_csv():
         flash("File must be CSV")
         return redirect(url_for("add"))
 
-    conn = get_db()
-    cur = conn.cursor()
-
+    # สร้าง reader ก่อน
     reader = csv.DictReader(
         TextIOWrapper(file, encoding="utf-8-sig")
     )
 
+    # ✅ debug header
+    print("CSV HEADERS:", reader.fieldnames)
+
+    REQUIRED_COLS = {
+        "company","business","product","code","product_type",
+        "mit","mit_issue","mit_due",
+        "factsheet","iso","test","tis","tisi",
+        "productmodel","descrip","size","color"
+    }
+
+    if not REQUIRED_COLS.issubset(reader.fieldnames):
+        return f"""
+        <h3>CSV header ไม่ตรง</h3>
+        <pre>{reader.fieldnames}</pre>
+        """, 400
+
+    conn = get_db()
+    cur = conn.cursor()
+
     for row in reader:
         print("ROW:", row)
+
         cur.execute("""
             INSERT INTO products (
                 company,
@@ -97,7 +114,7 @@ def import_csv():
             row.get("business"),
             row.get("product"),
             row.get("code"),
-            row.get("product_type"),   
+            row.get("product_type"),
             row.get("mit"),
             row.get("mit_issue") or None,
             row.get("mit_due") or None,
@@ -116,9 +133,14 @@ def import_csv():
     cur.close()
     conn.close()
 
-       
     flash("CSV imported successfully")
     return redirect(url_for("products"))
+
+
+@app.errorhandler(500)
+def internal_error(e):
+    import traceback
+    return "<pre>" + traceback.format_exc() + "</pre>", 500
 
 
 @app.route("/product/<int:pid>")
