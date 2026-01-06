@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, session, request, f
 from auth import auth_bp
 from decorators import login_required, role_required
 import csv
-from io import textIOwrapper
+import io
 from db import get_db
 
 app = Flask(__name__)
@@ -42,44 +42,41 @@ def products():
         return render_template("products.html", products=products)
     except Exception as e:
         return f"""
-        <h2>Tnternal Error</h2>
+        <h2>Internal Error</h2>
         <pre>{str(e)}</pre>
         """,500
         
     
 # กลับมาแก้พรุ่งนี้
 @app.route("/products/import-csv", methods=["POST"])
-@login_required   
+@login_required
 @role_required(["editor", "admin"])
 def import_csv():
     file = request.files.get("csv_file")
 
     if not file or file.filename =="":
-        flash("No CSV file selected")
-        return redirect(url_for("add"))
+        flash("No CSV file seleced")
+        return redirect(url_for("products"))
 
-    if not file.filename.lower().endswith(".csv"):
-        flash("File must be CSV")
-        return redirect(url_for("add"))
-     
+    stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
+    reader = csv.DictReader(stream)
+
+    
+    print("IMPORT CSV CALLED")
+    print("HEADERS:", reader.fieldnames)
+
+    REQUIRED_COLS = { 
+        "company","business","product","code","type",
+        "mit","mit_issue","mit_due",
+        "factsheet","iso","test","tis","tisi",
+        "productmodel","descrip","size","color"
+    }
+
+    if not REQUIRED_COLS.issubset(reader.fieldnames):
+        return "CSV header ไม่ตรงกับระบบ", 400
+
     conn = get_db()
     cur = conn.cursor()
-
-    reader = csv.DictReader(textIOwrapper(file, encoding= "utf-8-sig"))
-    # stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
-    # reader = csv.DictReader(stream)
-
-    # REQUIRED_COLS = { 
-    #     "company","business","product","code","type",
-    #     "mit","mit_issue","mit_due",
-    #     "factsheet","iso","test","tis","tisi",
-    #     "productmodel","descrip","size","color"
-    # }
-
-    # if not REQUIRED_COLS.issubset(reader.fieldnames):
-    #     return "CSV header ไม่ตรงกับระบบ", 400
-
-
 
     for row in reader:
         cur.execute("""
@@ -116,45 +113,62 @@ def import_csv():
     cur.close()
     conn.close()
 
-    flash("csv imported successfully")
     return redirect(url_for("products"))
-    print("csv row:", row)
+
+
 
 
 @app.route("/product/<int:pid>")
 @login_required
 def view(pid):
-    product = next(p for p in PRODUCTS if p["id"] == pid)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products WHERE id=%s", (pid,))
+    row = cur.fetchone()
+
+    if not row:
+        return "Product not found", 404
+
+    colnames = [desc[0] for desc in cur.description]
+    product = dict(zip(colnames, row))
+
+    cur.close()
+    conn.close()
+
     return render_template("view.html", product=product)
+
 
 @app.route("/product/<int:pid>/edit", methods=["GET","POST"])
 @login_required
 @role_required(["editor","admin"])
 def edit(pid):
 
-    print("CURRENT ROLE:", session.get("role"))
-    product = next(p for p in PRODUCTS if p["id"] == pid)
+    return "Edit page not implemented yet", 501
+    # print("CURRENT ROLE:", session.get("role"))
 
-    if request.method == "POST":
-        product["company"] = request.form["company"]
-        product["business"] = request.form["business"]
-        product["product"] = request.form["product"]
-        product["code"] = request.form["code"]
-        product["type"] = request.form["type"]
-        product["descrip"] = request.form["descrip"]
-        product["size"] = request.form["size"]
-        product["color"] = request.form["color"]    
-        product["mit"] = request.form["mit"]
-        product["expdate"] = request.form["expdate"]
-        product["factsheet"] = request.form["factsheet"]
-        product["ISO"] = request.form["ISO"]
-        product["test"] = request.form["test"]
-        product["TIS"] = request.form["TIS"]
-        product["TISI"] = request.form["TISI"]
-        product["productmodel"] = request.form["productmodel"]
+    # product = next(p for p in PRODUCTS if p["id"] == pid)
 
-        return redirect(url_for("view", pid=pid))
-    return render_template("edit.html", product=product)
+    # if request.method == "POST":
+    #     product["company"] = request.form["company"]
+    #     product["business"] = request.form["business"]
+    #     product["product"] = request.form["product"]
+    #     product["code"] = request.form["code"]
+    #     product["type"] = request.form["type"]
+    #     product["descrip"] = request.form["descrip"]
+    #     product["size"] = request.form["size"]
+    #     product["color"] = request.form["color"]
+    #     product["mit"] = request.form["mit"]
+    #     product["expdate"] = request.form["expdate"]
+    #     product["factsheet"] = request.form["factsheet"]
+    #     product["ISO"] = request.form["ISO"]
+    #     product["test"] = request.form["test"]
+    #     product["TIS"] = request.form["TIS"]
+    #     product["TISI"] = request.form["TISI"]
+    #     product["productmodel"] = request.form["productmodel"]
+
+    #     return redirect(url_for("view", pid=pid))
+    # return render_template("edit.html", product=product)
+
 
 @app.route("/product/add", methods=["GET","POST"])
 @login_required
@@ -184,10 +198,10 @@ def add():
             request.form["mit_issue"] or None,
             request.form["mit_due"] or None,
             request.form["factsheet"],
-            request.form["ISO"],
+            request.form["iso"],
             request.form["test"],
-            request.form["TIS"],
-            request.form["TISI"],
+            request.form["tis"],
+            request.form["tisi"],
             request.form["productmodel"],
             request.form["descrip"],
             request.form["size"],
