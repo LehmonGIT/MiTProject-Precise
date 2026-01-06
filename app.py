@@ -143,7 +143,7 @@ def edit(pid):
         product["type"] = request.form["type"]
         product["descrip"] = request.form["descrip"]
         product["size"] = request.form["size"]
-        product["color"] = request.form["color"]
+        product["color"] = request.form["color"]    
         product["mit"] = request.form["mit"]
         product["expdate"] = request.form["expdate"]
         product["factsheet"] = request.form["factsheet"]
