@@ -47,14 +47,14 @@ def products():
         """,500
         
     
-@app.route("/products/import-csv", methods=["GET", "POST"])
+@app.route("/products/import-csv", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
 def import_csv():
 
     print("IMPORT CSV CALLED")
     print("METHOD =", request.method)
-    
+
     if request.method == "POST" :
         file = request.files.get("csv_file")
 

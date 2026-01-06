@@ -294,24 +294,24 @@
                 </tr>
             </thead>
 
-            <tbody id="tableBody">
-                {% for p in products %}
-                <tr class="clickable-row" data-href="/product/{{ p.[0] }}">
-                    <td>{{ p[0] }}</td> {# id #}
-                    <td>{{ p[1] }}</td> {# company #}
-                    <td>{{ p[2] }}</td> {# business #}
-                    <td class="text-left">{{ p[3] }}</td> {# product #}
-                    <td>{{ p[4] }}</td> {# code #}
-                    <td>{{ p[5] }}</td> {# type #}
-                    <td>{{ p[6] }}</td> {# mit #}
-                    <td>{{ p[10] }}</td> {# iso #}
-                    <td>{{ p[12] }}</td> {# tis #}
-                    <td>{{ p[13] }}</td> {# tisi #}
-                    <td>{{ p[11] }}</td> {# test #}
-                    <td>{{ p[9] }}</td> {# factsheet #}
-                </tr>
-                {% endfor %} 
-            </tbody>
+        <tbody id="tableBody">
+            {% for p in products %}
+            <tr class="clickable-row" data-href="/product/{{ p.id }}">
+                <td>{{ p.id }}</td>
+                <td>{{ p.company }}</td>
+                <td>{{ p.business }}</td>
+                <td class="text-left">{{ p.product }}</td>
+                <td>{{ p.code }}</td>
+                <td>{{ p.product_type }}</td>
+                <td>{{ p.mit }}</td>
+                <td>{{ p.iso }}</td>
+                <td>{{ p.tis }}</td>
+                <td>{{ p.tisi }}</td>
+                <td>{{ p.test }}</td>
+                <td>{{ p.factsheet }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
 
         </table>
 
