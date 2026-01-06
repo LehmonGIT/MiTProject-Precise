@@ -325,7 +325,7 @@
             </tr>
             <tr>
                 <td>ประเภทผลิตภัณฑ์</td>
-                <td>{{ product.type }}</td>
+                <td>{{ product.product_type }}</td>
             </tr>
             <tr>
                 <td>รายละเอียดผลิตภัณฑ์</td>
@@ -404,17 +404,19 @@
             </tr>
             <tr>
                 <td class="doc-type">มอก.</td>
-                <td>{{ product.TIS }}</td>
-                <td>{{ product.TIS_issue }}</td>
-                <td>{{ product.TIS_due }}</td>
+                <td>{{ product.tis }}</td>
+                <!-- เพิ่มภายหลัง -->
+                <!-- <td>{{ product.TIS_issue }}</td>
+                <td>{{ product.TIS_due }}</td> -->
             </tr>
             <tr>
                 <td class="doc-type">สมอ.</td>
-                <td>{{ product.TISI }}</td>
-                <td>{{ product.TISI_issue }}</td>
-                <td>{{ product.TISI_due }}</td>
+                <td>{{ product.tist }}</td>
+
+                <!-- <td>{{ product.TISI_issue }}</td>
+                <td>{{ product.TISI_due }}</td> -->
             </tr>
-            <tr>
+            <!-- <tr>
                 <td class="doc-type">CFP</td>
                 <td>{{ product.CFP }}</td>
                 <td>{{ product.CFP_issue }}</td>
@@ -425,7 +427,7 @@
                 <td>{{ product.CFO }}</td>
                 <td>{{ product.CFO_issue }}</td>
                 <td>{{ product.CFO_due }}</td>
-            </tr>
+            </tr> -->
 
         </tbody>
     </table>
@@ -453,10 +455,10 @@
             <tr>
                 <td class="doc-type">FactSheet</td>
                 <td>{{ product.factsheet }}</td>
-                <td>{{ product.factsheet_issue }}</td>
-                <td>{{ product.factsheet_due }}</td>
+                <!-- <td>{{ product.factsheet_issue }}</td>
+                <td>{{ product.factsheet_due }}</td> -->
             </tr>
-            <tr>
+            <!-- <tr>
                 <td class="doc-type">Technical Data</td>
                 <td>{{ product.tech }}</td>
                 <td>{{ product.tech_issue }}</td>
@@ -497,7 +499,7 @@
                 <td>{{ product.tt5 }}</td>
                 <td>{{ product.tt5_issue }}</td>
                 <td>{{ product.tt5_due }}</td>
-            </tr>
+            </tr> -->
             
         </tbody>
     </table>

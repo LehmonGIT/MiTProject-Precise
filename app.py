@@ -52,6 +52,7 @@ def products():
 @role_required(["editor", "admin"])
 def import_csv():
     file = request.files.get("csv_file")
+    print("CSV HEADERS:", reader.fieldnames)
 
     if not file or file.filename == "":
         flash("No CSV file selected")
@@ -69,6 +70,7 @@ def import_csv():
     )
 
     for row in reader:
+        print("ROW:", row)
         cur.execute("""
             INSERT INTO products (
                 company,
