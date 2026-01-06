@@ -118,7 +118,7 @@ def import_csv():
 
     flash("csv imported successfully")
     return redirect(url_for("products"))
-
+    print("csv row:", row)
 
 
 @app.route("/product/<int:pid>")
