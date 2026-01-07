@@ -105,7 +105,7 @@ def import_csv():
                 flash("CSV header ไม่ตรง", "error")
                 return redirect(url_for("add"))
             
-            for i, row in enumerate(reader,start=1);
+            for i, row in enumerate(reader,start=1):
                 print(f"ROW {i}=", row)
 
             cur.execute("""
@@ -162,7 +162,7 @@ def import_csv():
         conn.rollback()
         print("Import error:", e)
         flash(f"Import ล้มเหลว : {e}", "error")
-        
+
     finally:    
         cur.close()
         conn.close()
