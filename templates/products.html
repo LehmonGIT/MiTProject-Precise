@@ -336,6 +336,19 @@
 
 </div>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="modal-overlay">
+    <div class="modal-box">
+        {% for cat, msg in messages %}
+        <h3>{{ msg }}</h3>
+        {% endfor %}
+        <button onclick="this.parentElement.parentElement.remove()">OK</button>
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+
 <script>
 
     function globalSearch() {

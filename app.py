@@ -5,6 +5,7 @@ from decorators import login_required, role_required
 import csv
 from io import TextIOWrapper
 from db import get_db
+import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "dev-secret"
@@ -52,18 +53,21 @@ def products():
 @role_required(["editor", "admin"])
 def import_csv():
 
-    print("IMPORT CSV CALLED")
+    print("IMPORT CSV CALLED")  
     print("METHOD =", request.method)
 
     file = request.files.get("csv_file")
 
     if not file or file.filename == "":
-        flash("กรุณาเลือกไฟล์")
+        flash("กรุณาเลือกไฟล์","error")
         return redirect(url_for("add"))
 
-    if not file.filename.lower().endswith(".csv,.xlsx"):
+    if not (file.filename.lower().endswith(".csv") or file.filename.lower().endswith(".xlsx")):
         flash("รอบรับไฟล์ CSV, xlsx")
-        return redirect(url_for("add"))
+        return redirect(url_for("add"))   
+
+    filename = file.filename.lower()
+    print("FILENAME =", filename)
 
         # สร้าง reader ก่อน
     reader = csv.DictReader(TextIOWrapper(file, encoding="utf-8-sig"))
@@ -86,37 +90,82 @@ def import_csv():
 
     conn = get_db()
     cur = conn.cursor()
+    inserted = 0
 
-    for row in reader:
-        print("ROW:", row)
+    try:
+        # .csv
+        if filename.endswith(".csv") :
+            reader = csv.DictReader(
+                TextIOWrapper(file, encoding= "utf-8-sig")
+            )
+            print("CSV HEADERS:", reader.fieldnames)
 
-        cur.execute("""
-            INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
-                factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (
-            row.get("company"),
-            row.get("business"),
-            row.get("product"),
-            row.get("code"),
-            row.get("product_type"),
-            row.get("mit"),
-            row.get("mit_issue") or None,
-            row.get("mit_due") or None,
-            row.get("factsheet"),
-            row.get("iso"),
-            row.get("test"),
-            row.get("tis"),
-            row.get("tisi"),
-            row.get("productmodel"),
-            row.get("descrip"),
-            row.get("size"),
-            row.get("color"),
-        ))
+            if not REQUIRED_COLS.issubset(reader.fieldnames):
+                print("หัวข้อไม่ตรงกัน")
+                flash("CSV header ไม่ตรง", "error")
+                return redirect(url_for("add"))
+            
+            for i, row in enumerate(reader,start=1);
+                print(f"ROW {i}=", row)
 
-    conn.commit()
-    cur.close()
-    conn.close()
+            cur.execute("""
+                INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
+                    factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (
+                row.get("company"),
+                row.get("business"),
+                row.get("product"),
+                row.get("code"),
+                row.get("product_type"),
+                row.get("mit"),
+                row.get("mit_issue") or None,
+                row.get("mit_due") or None,
+                row.get("factsheet"),
+                row.get("iso"),
+                row.get("test"),
+                row.get("tis"),
+                row.get("tisi"),
+                row.get("productmodel"),
+                row.get("descrip"),
+                row.get("size"),
+                row.get("color"),
+            ))
+            inserted += 1
+        # .xlsx
+        elif filename.endswith(".xlsx"):
+            df = pd.read_excel(file)
+            print("xlsx columns:",list(df.columns))
+
+            if not REQUIRED_COLS.issubset(pd.columns):
+
+                flash("Excel header ไม่ตรง", "error")
+                return redirect(url_for("add"))
+
+            for i,row in df.iterrows():
+                print(f"ROW {i+1}=", row.to_dict())
+
+                cur.execute("""
+                INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
+                    factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, tuple(row[col] if col in row else None for col in REQUIRED_COLS))
+                inserted +=1 
+
+        else:
+            flash("รองรับเฉพาะ .CSV และ .xlsx ", "error")
+            return redirect(url_for("add"))
+        
+        conn.commit()
+        flash(f"Import ไฟล์สำเร็จ {inserted} รายการ", "success")
+    except Exception as e:
+        conn.rollback()
+        print("Import error:", e)
+        flash(f"Import ล้มเหลว : {e}", "error")
+        
+    finally:    
+        cur.close()
+        conn.close()
 
     flash("แนบไฟล์สำเร็จ")
     return redirect(url_for("products"))
