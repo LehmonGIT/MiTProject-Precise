@@ -70,10 +70,29 @@ def import_csv():
     print("FILENAME =", filename)
 
         # สร้าง reader ก่อน
-    reader = csv.DictReader(TextIOWrapper(file, encoding="utf-8-sig"))
+    # reader = csv.DictReader(TextIOWrapper(file, encoding="utf-8-sig"))
+    encodings = ["utf-8-sig", "utf-8","tis-620","cp1252"]
 
-        # ✅ debug header
-    print("CSV HEADERS:", reader.fieldnames)
+    reader = None
+    last_error = None
+
+
+    for enc in encodings:
+        try:
+            file.stream.seek(0)
+            reader = csv.DictReader(TextIOWrapper(file, encoding=enc))
+            headers = reader.fieldnames
+            print(f"CSV encoding OK: {enc}")
+            print("CSV HEADERS:", headers)
+            break
+        except UnicodeDecodeError as e:
+            last_error = e
+
+    if reader is None:
+        return f"""
+        <h3>ไม่สามารถอ่านไฟล์ CSV</h3>
+        <pre>{last_error}</pre>
+        """, 400
 
     REQUIRED_COLS = {
         "company","business","product","code","product_type",
