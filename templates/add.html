@@ -99,7 +99,6 @@
     inset: 0;
     background: rgba(0,0,0,0.55);
     z-index: 999;
-    display: flex;
     align-items: center;
     justify-content: center;
     }
@@ -160,7 +159,7 @@
         to   { transform: scale(1); opacity: 1; }
     }
 
-    btn-import {
+    .btn-import {
         background: var(--c4);   /* เขียว */
         color: white;
         border: none;
@@ -250,102 +249,86 @@
 
 
 
-<script>
-
-    function openCsvModal() {
-        document.getElementById("csvModal").style.display = "flex";
-    }
-
-    function closeCsvModal() {
-        document.getElementById("csvModal").style.display = "none";
-    }
-
-    function showMode(mode) {
-    //     document.getElementById("csvForm").style.display =
-    //         mode === "csv" ? "block" : "none";
-
-        document.getElementById("manualForm").style.display =
-            mode === "manual" ? "block" : "none";
-    }
-</script>
 
 <script>
-    let selectedFiles = []
+let selectedFiles = []
 
-    function openCsvModal() {
-        document.getElementById("importModal").style.display = "flex"
-    }
+function openCsvModal() {
+  document.getElementById("importModal").style.display = "flex"
+}
 
-    function closeImport() {
-        selectedFiles = []
-        document.getElementById("importModal").style.display = "none"
-    }
+function closeImport() {
+  selectedFiles = []
+  document.getElementById("importModal").style.display = "none"
+}
 
-    document.getElementById("importFiles").addEventListener("change", e => {
-        selectedFiles = [...e.target.files]
-        const list = selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
-        document.getElementById("fileList").innerHTML = list
-    })
+document.getElementById("importFiles").addEventListener("change", e => {
+  selectedFiles = [...e.target.files]
+  const list = selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
+  document.getElementById("fileList").innerHTML = list
+})
 
-    /* ---------- Popup 1 → 2 ---------- */
-    async function goConfirm() {
-        if (selectedFiles.length === 0) {
-            alert("กรุณาเลือกไฟล์")
-            return
-        }
+/* ---------- Popup 1 → 2 ---------- */
+async function goConfirm() {
+  if (selectedFiles.length === 0) {
+    alert("กรุณาเลือกไฟล์")
+    return
+  }
 
-        const fd = new FormData()
-        selectedFiles.forEach(f => fd.append("files[]", f))
+  const fd = new FormData()
+  selectedFiles.forEach(f => fd.append("files[]", f))
 
-        const res = await fetch("/products/import/analyze", {
-            method: "POST",
-            body: fd
-        })
+  const res = await fetch("/products/import/analyze", {
+    method: "POST",
+    body: fd
+  })
 
-        const data = await res.json()
-        if (!data.ok) {
-            alert(data.error)
-            return
-        }
+  const data = await res.json()
+  if (!data.ok) {
+    alert(data.error)
+    return
+  }
 
-        document.getElementById("analyzeResult").innerHTML =
-            data.files.map(f =>
-                `✔ ${f.filename} (${f.total} rows)`
-            ).join("<br>")
+  document.getElementById("analyzeResult").innerHTML =
+    data.files.map(f =>
+      `✔ ${f.filename} (${f.total} rows)`
+    ).join("<br>")
 
-        document.getElementById("importModal").style.display = "none"
-        document.getElementById("confirmModal").style.display = "flex"
-    }
+  document.getElementById("importModal").style.display = "none"
+  document.getElementById("confirmModal").style.display = "flex"
+}
 
-    /* ---------- Popup 2 → 3 ---------- */
-    async function startImport() {
-        document.getElementById("confirmModal").style.display = "none"
-        document.getElementById("resultModal").style.display = "flex"
-        document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
+/* ---------- Popup 2 → 3 ---------- */
+async function startImport() {
+  document.getElementById("confirmModal").style.display = "none"
+  document.getElementById("resultModal").style.display = "flex"
+  document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
 
-        const res = await fetch("/products/import/confirm", { method: "POST" })
-        const data = await res.json()
+  const res = await fetch("/products/import/confirm", { method: "POST" })
+  const data = await res.json()
 
-        if (data.ok) {
-            document.getElementById("resultText").innerHTML =
-                `✅ สำเร็จ ${data.success} <br> ❌ ล้มเหลว ${data.failed}`
-        } else {
-            document.getElementById("resultText").innerText = "❌ " + data.error
-        }
-    }
+  if (data.ok) {
+    document.getElementById("resultText").innerHTML =
+      `✅ สำเร็จ ${data.success} <br> ❌ ล้มเหลว ${data.failed}`
+  } else {
+    document.getElementById("resultText").innerText = "❌ " + data.error
+  }
+}
 
-    function backToImport() {
-        document.getElementById("confirmModal").style.display = "none"
-        document.getElementById("importModal").style.display = "flex"
-    }
+function backToImport() {
+  document.getElementById("confirmModal").style.display = "none"
 
-    function closeResult() {
-        document.getElementById("resultModal").style.display = "none"
-    }
+//   แก้ล่าสุด
+//   document.getElementById("importModal").style.display = "flex"
+}
 
-    function goProducts() {
-        window.location.href = "/products"
-    }
+function closeResult() {
+  document.getElementById("resultModal").style.display = "none"
+}
+
+function goProducts() {
+  window.location.href = "/products"
+}
 </script>
 
 
