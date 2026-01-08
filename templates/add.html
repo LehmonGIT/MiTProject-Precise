@@ -207,7 +207,7 @@
 
         <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data">
 
-            <input type="file" name="csv_file" accept=".csv,.xlsx" required>
+            <input type="file" id="csv_file" accept=".csv,.xlsx" required>
 
             <div class="modal-actions">
                 <button type="submit" class="btn-upload">Upload</button>
@@ -216,7 +216,19 @@
         </form>
     </div>
 </div>
-    
+
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-box" style="width:520px">
+        <h3 style="color:red">⚠ ตรวจสอบข้อมูลก่อน Import</h3>
+        <div id="previewBox"></div>
+
+        <div class="modal-actions">
+            <button class="btn-upload" onclick="confirmImport()">Yes</button>
+            <button class="btn-cancel" onclick="closeConfirm()">No</button>
+        </div>
+    </div>
+</div>
+
 
 <script>
 
@@ -236,7 +248,62 @@
             mode === "manual" ? "block" : "none";
     }
 </script>
-    
+
+<script>
+    document.getElementById("csvForm").addEventListener("submit", async e => {
+        e.preventDefault()
+
+        const file = document.getElementById("csvFile").files[0]
+        const fd = new FormData()
+        fd.append("csv_file", file)
+
+        const res = await fetch("/products/import-csv/preview", {
+            method: "POST",
+            body: fd
+        })
+        const data = await res.json()
+
+        if (!data.ok) {
+            alert(data.error)
+            return
+        }
+
+        let html = `<p>พบข้อมูลทั้งหมด ${data.total} รายการ</p>`
+        html += "<table border='1' width='100%'><tr>"
+        data.headers.forEach(h => html += `<th>${h}</th>`)
+        html += "</tr>"
+
+        data.preview.forEach(r => {
+            html += "<tr>"
+            data.headers.forEach(h => html += `<td>${r[h] ?? ""}</td>`)
+            html += "</tr>"
+        })
+        html += "</table>"
+
+        document.getElementById("previewBox").innerHTML = html
+        document.getElementById("confirmModal").style.display = "flex"
+    })
+
+    async function confirmImport() {
+        const res = await fetch("/products/import-csv/confirm", { method: "POST" })
+        const data = await res.json()
+
+        alert(`Import สำเร็จ ${data.success} | ล้มเหลว ${data.failed}`)
+        window.location.href = "/products"
+    }
+
+    function closeConfirm() {
+        document.getElementById("confirmModal").style.display = "none"
+    }
+</script>
+
+
+
+
+
+
+
+
     <form id="manualForm" method="POST" enctype="multipart/form-data">
 
             <!-- <table>

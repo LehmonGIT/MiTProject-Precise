@@ -71,7 +71,7 @@ def import_csv():
 
         # สร้าง reader ก่อน
     # reader = csv.DictReader(TextIOWrapper(file, encoding="utf-8-sig"))
-    encodings = ["utf-8-sig", "utf-8","tis-620","cp1252"]
+    encodings = ["utf-8-sig", " *.csv","tis-620","cp1252"]
 
     reader = None
     last_error = None
@@ -115,7 +115,7 @@ def import_csv():
         # .csv
         if filename.endswith(".csv") :
             reader = csv.DictReader(
-                TextIOWrapper(file, encoding= "utf-8-sig")
+                TextIOWrapper(file, encoding= "   utf-8-sig")
             )
             print("CSV HEADERS:", reader.fieldnames)
 
@@ -194,6 +194,131 @@ def import_csv():
 def internal_error(e):
     import traceback
     return "<pre>" + traceback.format_exc() + "</pre>", 500
+
+
+@app.route("/products/import-csv/preview", methods=["POST"])
+@login_required
+@role_required(["editor", "admin"])
+def import_csv_preview():
+
+    file = request.files.get("csv_file")
+    if not file:
+        return {"ok": False, "error": "ไม่พบไฟล์"}, 400
+
+    REQUIRED_COLS = {
+        "company","business","product","code","product_type",
+        "mit","mit_issue","mit_due",
+        "factsheet","iso","test","tis","tisi",
+        "productmodel","descrip","size","color"
+    }
+
+    rows = []
+    headers = []
+
+    try:
+        # ---- CSV ----
+        if file.filename.lower().endswith(".csv"):
+            encodings = ["utf-8-sig", "tis-620", "cp1252"]
+            for enc in encodings:
+                try:
+                    file.stream.seek(0)
+                    reader = csv.DictReader(TextIOWrapper(file.stream, encoding=enc))
+                    headers = reader.fieldnames
+                    rows = list(reader)
+                    break
+                except UnicodeDecodeError:
+                    continue
+
+        # ---- XLSX ----
+        elif file.filename.lower().endswith(".xlsx"):
+            df = pd.read_excel(file)
+            headers = list(df.columns)
+            rows = df.to_dict(orient="records")
+
+        else:
+            return {"ok": False, "error": "รองรับเฉพาะ CSV / XLSX"}, 400
+
+    except Exception as e:
+        return {"ok": False, "error": str(e)}, 400
+
+    if not REQUIRED_COLS.issubset(headers):
+        return {
+            "ok": False,
+            "error": "Header ไม่ตรง",
+            "headers": headers
+        }, 400
+
+    # เก็บไว้รอ confirm
+    session["csv_import_rows"] = rows
+
+    return {
+        "ok": True,
+        "headers": headers,
+        "preview": rows[:5],
+        "total": len(rows)
+    }
+
+
+@app.route("/products/import-csv/confirm", methods=["POST"])
+@login_required
+@role_required(["editor", "admin"])
+def import_csv_confirm():
+
+    rows = session.get("csv_import_rows")
+    if not rows:
+        return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    success = 0
+    failed = 0
+
+    for row in rows:
+        try:
+            cur.execute("""
+                INSERT INTO products (
+                    company,business,product,code,product_type,
+                    mit,mit_issue,mit_due,
+                    factsheet,iso,test,tis,tisi,
+                    productmodel,descrip,size,color
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (
+                row.get("company"),
+                row.get("business"),
+                row.get("product"),
+                row.get("code"),
+                row.get("product_type"),
+                row.get("mit"),
+                row.get("mit_issue") or None,
+                row.get("mit_due") or None,
+                row.get("factsheet"),
+                row.get("iso"),
+                row.get("test"),
+                row.get("tis"),
+                row.get("tisi"),
+                row.get("productmodel"),
+                row.get("descrip"),
+                row.get("size"),
+                row.get("color"),
+            ))
+            success += 1
+        except Exception as e:
+            print("IMPORT ERROR:", e)
+            failed += 1
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    session.pop("csv_import_rows", None)
+
+    return {
+        "ok": True,
+        "success": success,
+        "failed": failed
+    }
+
+
+
 
 
 @app.route("/product/<int:pid>")
