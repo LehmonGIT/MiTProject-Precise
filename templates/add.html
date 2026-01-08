@@ -205,7 +205,9 @@
         </span>
         </p>
 
-        <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data">
+        <form id="csvForm">
+
+        <!-- <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data"> -->
 
             <input type="file" id="csv_file" accept=".csv,.xlsx" required>
 

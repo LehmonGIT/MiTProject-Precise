@@ -48,150 +48,150 @@ def products():
         """,500
         
     
-@app.route("/products/import-csv", methods=["POST"])
-@login_required
-@role_required(["editor", "admin"])
-def import_csv():
+# @app.route("/products/import-csv", methods=["POST"])
+# @login_required
+# @role_required(["editor", "admin"])
+# def import_csv():
 
-    print("IMPORT CSV CALLED")  
-    print("METHOD =", request.method)
+#     print("IMPORT CSV CALLED")  
+#     print("METHOD =", request.method)
 
-    file = request.files.get("csv_file")
+#     file = request.files.get("csv_file")
 
-    if not file or file.filename == "":
-        flash("กรุณาเลือกไฟล์","error")
-        return redirect(url_for("add"))
+#     if not file or file.filename == "":
+#         flash("กรุณาเลือกไฟล์","error")
+#         return redirect(url_for("add"))
 
-    if not (file.filename.lower().endswith(".csv") or file.filename.lower().endswith(".xlsx")):
-        flash("รอบรับไฟล์ CSV, xlsx")
-        return redirect(url_for("add"))   
+#     if not (file.filename.lower().endswith(".csv") or file.filename.lower().endswith(".xlsx")):
+#         flash("รอบรับไฟล์ CSV, xlsx")
+#         return redirect(url_for("add"))   
 
-    filename = file.filename.lower()
-    print("FILENAME =", filename)
+#     filename = file.filename.lower()
+#     print("FILENAME =", filename)
 
-    encodings = ["utf-8-sig","tis-620","cp1252"]
+#     encodings = ["utf-8-sig","tis-620","cp1252"]
 
-    reader = None
-    last_error = None
+#     reader = None
+#     last_error = None
 
 
-    for enc in encodings:
-        try:
-            file.stream.seek(0)
-            reader = csv.DictReader(TextIOWrapper(file, encoding=enc))
-            headers = reader.fieldnames
-            print(f"CSV encoding OK: {enc}")
-            print("CSV HEADERS:", headers)
-            break
-        except UnicodeDecodeError as e:
-            last_error = e
+#     for enc in encodings:
+#         try:
+#             file.stream.seek(0)
+#             reader = csv.DictReader(TextIOWrapper(file, encoding=enc))
+#             headers = reader.fieldnames
+#             print(f"CSV encoding OK: {enc}")
+#             print("CSV HEADERS:", headers)
+#             break
+#         except UnicodeDecodeError as e:
+#             last_error = e
 
-    if reader is None:
-        return f"""
-        <h3>ไม่สามารถอ่านไฟล์ CSV</h3>
-        <pre>{last_error}</pre>
-        """, 400
+#     if reader is None:
+#         return f"""
+#         <h3>ไม่สามารถอ่านไฟล์ CSV</h3>
+#         <pre>{last_error}</pre>
+#         """, 400
 
-    REQUIRED_COLS = {
-        "company","business","product","code","product_type",
-        "mit","mit_issue","mit_due",
-        "factsheet","iso","test","tis","tisi",
-        "productmodel","descrip","size","color"
-        }
+#     REQUIRED_COLS = {
+#         "company","business","product","code","product_type",
+#         "mit","mit_issue","mit_due",
+#         "factsheet","iso","test","tis","tisi",
+#         "productmodel","descrip","size","color"
+#         }
 
-    if not REQUIRED_COLS.issubset(reader.fieldnames):
-        return f"""
-        <h3>CSV header ไม่ตรง</h3>
-        <pre>{reader.fieldnames}</pre>
-        """, 400
+#     if not REQUIRED_COLS.issubset(reader.fieldnames):
+#         return f"""
+#         <h3>CSV header ไม่ตรง</h3>
+#         <pre>{reader.fieldnames}</pre>
+#         """, 400
 
-    conn = get_db()
-    cur = conn.cursor()
-    inserted = 0
+#     conn = get_db()
+#     cur = conn.cursor()
+#     inserted = 0
 
-    try:
-        # .csv
-        if filename.endswith(".csv") :
-            reader = csv.DictReader(
-                TextIOWrapper(file, encoding= "utf-8-sig")
-            )
-            print("CSV HEADERS:", reader.fieldnames)
+#     try:
+#         # .csv
+#         if filename.endswith(".csv") :
+#             reader = csv.DictReader(
+#                 TextIOWrapper(file, encoding= "utf-8-sig")
+#             )
+#             print("CSV HEADERS:", reader.fieldnames)
 
-            if not REQUIRED_COLS.issubset(reader.fieldnames):
-                print("หัวข้อไม่ตรงกัน")
-                flash("CSV header ไม่ตรง", "error")
-                return redirect(url_for("add"))
+#             if not REQUIRED_COLS.issubset(reader.fieldnames):
+#                 print("หัวข้อไม่ตรงกัน")
+#                 flash("CSV header ไม่ตรง", "error")
+#                 return redirect(url_for("add"))
             
-            for i, row in enumerate(reader,start=1):
-                print(f"ROW {i}=", row)
+#             for i, row in enumerate(reader,start=1):
+#                 print(f"ROW {i}=", row)
 
-            cur.execute("""
-                INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
-                    factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (
-                row.get("company"),
-                row.get("business"),
-                row.get("product"),
-                row.get("code"),
-                row.get("product_type"),
-                row.get("mit"),
-                row.get("mit_issue") or None,
-                row.get("mit_due") or None,
-                row.get("factsheet"),
-                row.get("iso"),
-                row.get("test"),
-                row.get("tis"),
-                row.get("tisi"),
-                row.get("productmodel"),
-                row.get("descrip"),
-                row.get("size"),
-                row.get("color"),
-            ))
-            inserted += 1
-        # .xlsx
-        elif filename.endswith(".xlsx"):
-            df = pd.read_excel(file)
-            print("xlsx columns:",list(df.columns))
+#             cur.execute("""
+#                 INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
+#                     factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
+#                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+#             """, (
+#                 row.get("company"),
+#                 row.get("business"),
+#                 row.get("product"),
+#                 row.get("code"),
+#                 row.get("product_type"),
+#                 row.get("mit"),
+#                 row.get("mit_issue") or None,
+#                 row.get("mit_due") or None,
+#                 row.get("factsheet"),
+#                 row.get("iso"),
+#                 row.get("test"),
+#                 row.get("tis"),
+#                 row.get("tisi"),
+#                 row.get("productmodel"),
+#                 row.get("descrip"),
+#                 row.get("size"),
+#                 row.get("color"),
+#             ))
+#             inserted += 1
+#         # .xlsx
+#         elif filename.endswith(".xlsx"):
+#             df = pd.read_excel(file)
+#             print("xlsx columns:",list(df.columns))
 
-            if not REQUIRED_COLS.issubset(pd.columns):
+#             if not REQUIRED_COLS.issubset(pd.columns):
 
-                flash("Excel header ไม่ตรง", "error")
-                return redirect(url_for("add"))
+#                 flash("Excel header ไม่ตรง", "error")
+#                 return redirect(url_for("add"))
 
-            for i,row in df.iterrows():
-                print(f"ROW {i+1}=", row.to_dict())
+#             for i,row in df.iterrows():
+#                 print(f"ROW {i+1}=", row.to_dict())
 
-                cur.execute("""
-                INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
-                    factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, tuple(row[col] if col in row else None for col in REQUIRED_COLS))
-                inserted +=1 
+#                 cur.execute("""
+#                 INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
+#                     factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
+#                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+#             """, tuple(row[col] if col in row else None for col in REQUIRED_COLS))
+#                 inserted +=1 
 
-        else:
-            flash("รองรับเฉพาะ .CSV และ .xlsx ", "error")
-            return redirect(url_for("add"))
+#         else:
+#             flash("รองรับเฉพาะ .CSV และ .xlsx ", "error")
+#             return redirect(url_for("add"))
         
-        conn.commit()
-        flash(f"Import ไฟล์สำเร็จ {inserted} รายการ", "success")
-    except Exception as e:
-        conn.rollback()
-        print("Import error:", e)
-        flash(f"Import ล้มเหลว : {e}", "error")
+#         conn.commit()
+#         flash(f"Import ไฟล์สำเร็จ {inserted} รายการ", "success")
+#     except Exception as e:
+#         conn.rollback()
+#         print("Import error:", e)
+#         flash(f"Import ล้มเหลว : {e}", "error")
 
-    finally:    
-        cur.close()
-        conn.close()
+#     finally:    
+#         cur.close()
+#         conn.close()
 
-    flash("แนบไฟล์สำเร็จ")
-    return redirect(url_for("products"))
+#     flash("แนบไฟล์สำเร็จ")
+#     return redirect(url_for("products"))
     
 
-@app.errorhandler(500)
-def internal_error(e):
-    import traceback
-    return "<pre>" + traceback.format_exc() + "</pre>", 500
+# @app.errorhandler(500)
+# def internal_error(e):
+#     import traceback
+#     return "<pre>" + traceback.format_exc() + "</pre>", 500
 
 
 @app.route("/products/import-csv/preview", methods=["POST"])
