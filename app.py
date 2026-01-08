@@ -69,9 +69,7 @@ def import_csv():
     filename = file.filename.lower()
     print("FILENAME =", filename)
 
-        # สร้าง reader ก่อน
-    # reader = csv.DictReader(TextIOWrapper(file, encoding="utf-8-sig"))
-    encodings = ["utf-8-sig", " *.csv","tis-620","cp1252"]
+    encodings = ["utf-8-sig","tis-620","cp1252"]
 
     reader = None
     last_error = None
@@ -115,7 +113,7 @@ def import_csv():
         # .csv
         if filename.endswith(".csv") :
             reader = csv.DictReader(
-                TextIOWrapper(file, encoding= "   utf-8-sig")
+                TextIOWrapper(file, encoding= "utf-8-sig")
             )
             print("CSV HEADERS:", reader.fieldnames)
 
