@@ -48,272 +48,185 @@ def products():
         """,500
         
     
-# @app.route("/products/import-csv", methods=["POST"])
-# @login_required
-# @role_required(["editor", "admin"])
-# def import_csv():
+REQUIRED_COLS = {
+    "company","business","product","code","product_type",
+    "mit","mit_issue","mit_due",
+    "factsheet","iso","test","tis","tisi",
+    "productmodel","descrip","size","color"
+}
 
-#     print("IMPORT CSV CALLED")  
-#     print("METHOD =", request.method)
-
-#     file = request.files.get("csv_file")
-
-#     if not file or file.filename == "":
-#         flash("กรุณาเลือกไฟล์","error")
-#         return redirect(url_for("add"))
-
-#     if not (file.filename.lower().endswith(".csv") or file.filename.lower().endswith(".xlsx")):
-#         flash("รอบรับไฟล์ CSV, xlsx")
-#         return redirect(url_for("add"))   
-
-#     filename = file.filename.lower()
-#     print("FILENAME =", filename)
-
-#     encodings = ["utf-8-sig","tis-620","cp1252"]
-
-#     reader = None
-#     last_error = None
+MAX_FILES = 2
+MAX_TOTAL_SIZE = 10 * 1024 * 1024  # 10MB
+ALLOWED_EXT = {".csv", ".xlsx", ".xls"}
 
 
-#     for enc in encodings:
-#         try:
-#             file.stream.seek(0)
-#             reader = csv.DictReader(TextIOWrapper(file, encoding=enc))
-#             headers = reader.fieldnames
-#             print(f"CSV encoding OK: {enc}")
-#             print("CSV HEADERS:", headers)
-#             break
-#         except UnicodeDecodeError as e:
-#             last_error = e
-
-#     if reader is None:
-#         return f"""
-#         <h3>ไม่สามารถอ่านไฟล์ CSV</h3>
-#         <pre>{last_error}</pre>
-#         """, 400
-
-#     REQUIRED_COLS = {
-#         "company","business","product","code","product_type",
-#         "mit","mit_issue","mit_due",
-#         "factsheet","iso","test","tis","tisi",
-#         "productmodel","descrip","size","color"
-#         }
-
-#     if not REQUIRED_COLS.issubset(reader.fieldnames):
-#         return f"""
-#         <h3>CSV header ไม่ตรง</h3>
-#         <pre>{reader.fieldnames}</pre>
-#         """, 400
-
-#     conn = get_db()
-#     cur = conn.cursor()
-#     inserted = 0
-
-#     try:
-#         # .csv
-#         if filename.endswith(".csv") :
-#             reader = csv.DictReader(
-#                 TextIOWrapper(file, encoding= "utf-8-sig")
-#             )
-#             print("CSV HEADERS:", reader.fieldnames)
-
-#             if not REQUIRED_COLS.issubset(reader.fieldnames):
-#                 print("หัวข้อไม่ตรงกัน")
-#                 flash("CSV header ไม่ตรง", "error")
-#                 return redirect(url_for("add"))
-            
-#             for i, row in enumerate(reader,start=1):
-#                 print(f"ROW {i}=", row)
-
-#             cur.execute("""
-#                 INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
-#                     factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
-#                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-#             """, (
-#                 row.get("company"),
-#                 row.get("business"),
-#                 row.get("product"),
-#                 row.get("code"),
-#                 row.get("product_type"),
-#                 row.get("mit"),
-#                 row.get("mit_issue") or None,
-#                 row.get("mit_due") or None,
-#                 row.get("factsheet"),
-#                 row.get("iso"),
-#                 row.get("test"),
-#                 row.get("tis"),
-#                 row.get("tisi"),
-#                 row.get("productmodel"),
-#                 row.get("descrip"),
-#                 row.get("size"),
-#                 row.get("color"),
-#             ))
-#             inserted += 1
-#         # .xlsx
-#         elif filename.endswith(".xlsx"):
-#             df = pd.read_excel(file)
-#             print("xlsx columns:",list(df.columns))
-
-#             if not REQUIRED_COLS.issubset(pd.columns):
-
-#                 flash("Excel header ไม่ตรง", "error")
-#                 return redirect(url_for("add"))
-
-#             for i,row in df.iterrows():
-#                 print(f"ROW {i+1}=", row.to_dict())
-
-#                 cur.execute("""
-#                 INSERT INTO products (company,business,product,code,product_type,mit,mit_issue,mit_due,
-#                     factsheet,iso,test,tis,tisi,productmodel,descrip,size,color)
-#                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-#             """, tuple(row[col] if col in row else None for col in REQUIRED_COLS))
-#                 inserted +=1 
-
-#         else:
-#             flash("รองรับเฉพาะ .CSV และ .xlsx ", "error")
-#             return redirect(url_for("add"))
-        
-#         conn.commit()
-#         flash(f"Import ไฟล์สำเร็จ {inserted} รายการ", "success")
-#     except Exception as e:
-#         conn.rollback()
-#         print("Import error:", e)
-#         flash(f"Import ล้มเหลว : {e}", "error")
-
-#     finally:    
-#         cur.close()
-#         conn.close()
-
-#     flash("แนบไฟล์สำเร็จ")
-#     return redirect(url_for("products"))
-    
-
-# @app.errorhandler(500)
-# def internal_error(e):
-#     import traceback
-#     return "<pre>" + traceback.format_exc() + "</pre>", 500
-
-
-@app.route("/products/import-csv/preview", methods=["POST"])
+@app.route("/products/import/analyze", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
-def import_csv_preview():
+def import_analyze():
 
-    file = request.files.get("csv_file")
-    if not file:
-        return {"ok": False, "error": "ไม่พบไฟล์"}, 400
+    files = request.files.getlist("files[]")
 
-    REQUIRED_COLS = {
-        "company","business","product","code","product_type",
-        "mit","mit_issue","mit_due",
-        "factsheet","iso","test","tis","tisi",
-        "productmodel","descrip","size","color"
-    }
+    # ----- validate file count -----
+    if not files or len(files) > MAX_FILES:
+        return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
 
-    rows = []
-    headers = []
+    total_size = sum(f.content_length or 0 for f in files)
+    if total_size > MAX_TOTAL_SIZE:
+        return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
 
-    try:
-        # ---- CSV ----
-        if file.filename.lower().endswith(".csv"):
-            encodings = ["utf-8-sig", "tis-620", "cp1252"]
-            for enc in encodings:
-                try:
-                    file.stream.seek(0)
-                    reader = csv.DictReader(TextIOWrapper(file.stream, encoding=enc))
-                    headers = reader.fieldnames
-                    rows = list(reader)
-                    break
-                except UnicodeDecodeError:
-                    continue
+    analyzed_data = []
+    errors = []
 
-        # ---- XLSX ----
-        elif file.filename.lower().endswith(".xlsx"):
-            df = pd.read_excel(file)
-            headers = list(df.columns)
-            rows = df.to_dict(orient="records")
+    for file in files:
+        name = file.filename.lower()
 
-        else:
-            return {"ok": False, "error": "รองรับเฉพาะ CSV / XLSX"}, 400
+        if not any(name.endswith(ext) for ext in ALLOWED_EXT):
+            errors.append(f"{file.filename} : นามสกุลไม่รองรับ")
+            continue
 
-    except Exception as e:
-        return {"ok": False, "error": str(e)}, 400
+        try:
+            # ---------- CSV ----------
+            if name.endswith(".csv"):
+                encodings = ["utf-8-sig", "tis-620", "cp1252"]
+                reader = None
 
-    if not REQUIRED_COLS.issubset(headers):
-        return {
-            "ok": False,
-            "error": "Header ไม่ตรง",
-            "headers": headers
-        }, 400
+                for enc in encodings:
+                    try:
+                        file.stream.seek(0)
+                        reader = csv.DictReader(
+                            TextIOWrapper(file.stream, encoding=enc)
+                        )
+                        break
+                    except UnicodeDecodeError:
+                        continue
 
-    # เก็บไว้รอ confirm
-    session["csv_import_rows"] = rows
+                if not reader:
+                    raise Exception("ไม่สามารถอ่าน encoding")
+
+                headers = reader.fieldnames
+                rows = list(reader)
+
+            # ---------- XLSX ----------
+            else:
+                df = pd.read_excel(file)
+                headers = list(df.columns)
+                rows = df.to_dict(orient="records")
+
+            # ---------- validate header ----------
+            if not REQUIRED_COLS.issubset(headers):
+                raise Exception(f"Header ไม่ตรง ({headers})")
+
+            analyzed_data.append({
+                "filename": file.filename,
+                "headers": headers,
+                "rows": rows,
+                "total": len(rows)
+            })
+
+        except Exception as e:
+            errors.append(f"{file.filename} : {str(e)}")
+
+    if errors:
+        return {"ok": False, "error": errors}, 400
+
+    # 👉 เก็บไว้รอ confirm
+    session["import_buffer"] = analyzed_data
 
     return {
         "ok": True,
-        "headers": headers,
-        "preview": rows[:5],
-        "total": len(rows)
+        "files": [
+            {
+                "filename": f["filename"],
+                "total": f["total"],
+                "preview": f["rows"][:5]
+            }
+            for f in analyzed_data
+        ]
     }
 
 
-@app.route("/products/import-csv/confirm", methods=["POST"])
+@app.route("/products/import/confirm", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
-def import_csv_confirm():
+def import_confirm():
 
-    rows = session.get("csv_import_rows")
-    if not rows:
+    buffer = session.get("import_buffer")
+    if not buffer:
         return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
 
     conn = get_db()
     cur = conn.cursor()
+
     success = 0
     failed = 0
+    errors = []
 
-    for row in rows:
-        try:
-            cur.execute("""
-                INSERT INTO products (
-                    company,business,product,code,product_type,
-                    mit,mit_issue,mit_due,
-                    factsheet,iso,test,tis,tisi,
-                    productmodel,descrip,size,color
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (
-                row.get("company"),
-                row.get("business"),
-                row.get("product"),
-                row.get("code"),
-                row.get("product_type"),
-                row.get("mit"),
-                row.get("mit_issue") or None,
-                row.get("mit_due") or None,
-                row.get("factsheet"),
-                row.get("iso"),
-                row.get("test"),
-                row.get("tis"),
-                row.get("tisi"),
-                row.get("productmodel"),
-                row.get("descrip"),
-                row.get("size"),
-                row.get("color"),
-            ))
-            success += 1
-        except Exception as e:
-            print("IMPORT ERROR:", e)
-            failed += 1
+    try:
+        for file in buffer:
+            for row in file["rows"]:
+                try:
+                    cur.execute("""
+                        INSERT INTO products (
+                            company,business,product,code,product_type,
+                            mit,mit_issue,mit_due,
+                            factsheet,iso,test,tis,tisi,
+                            productmodel,descrip,size,color
+                        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """, (
+                        row.get("company"),
+                        row.get("business"),
+                        row.get("product"),
+                        row.get("code"),
+                        row.get("product_type"),
+                        row.get("mit"),
+                        row.get("mit_issue") or None,
+                        row.get("mit_due") or None,
+                        row.get("factsheet"),
+                        row.get("iso"),
+                        row.get("test"),
+                        row.get("tis"),
+                        row.get("tisi"),
+                        row.get("productmodel"),
+                        row.get("descrip"),
+                        row.get("size"),
+                        row.get("color"),
+                    ))
+                    success += 1
+                except Exception as e:
+                    failed += 1
+                    errors.append(str(e))
 
-    conn.commit()
-    cur.close()
-    conn.close()
-    session.pop("csv_import_rows", None)
+        conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": str(e)}, 500
+
+    finally:
+        cur.close()
+        conn.close()
+        session.pop("import_buffer", None)
 
     return {
         "ok": True,
         "success": success,
-        "failed": failed
+        "failed": failed,
+        "errors": errors[:5]  # กัน error ยาว
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

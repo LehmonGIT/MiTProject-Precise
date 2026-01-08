@@ -193,43 +193,61 @@
             </button>
         </div>
 
-<div id="csvModal" class="modal-overlay">
+<!-- POPUP 1 : IMPORT -->
+<div id="importModal" class="modal-overlay">
     <div class="modal-box">
-        <h3>Import ไฟล์ข้อมูล</h3>
+        <h3>Import CSV / Excel</h3>
 
-        <p style="font-size:14px"></p>
-        <p>กรุณาเลือกไฟล์ที่มีนามสกุล <b>.csv or .xlsx</b></p>
-        
-        <span style="font-size:12px;color:#f00606da">
-            ⚠ หัวข้อของตารางข้อมูลใน Excel ต้องตรงกับตารางหน้า Product ⚠
-        </span>
-        </p>
+        <input type="file" id="importFiles" multiple accept=".csv,.xlsx,.xls">
 
-        <form id="csvForm">
+        <div id="fileList" style="font-size:13px;margin:10px 0"></div>
 
-        <!-- <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data"> -->
-
-            <input type="file" id="csv_file" accept=".csv,.xlsx" required>
-
-            <div class="modal-actions">
-                <button type="submit" class="btn-upload">Upload</button>
-                <button type="button" class="btn-cancel" onclick="closeCsvModal()">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="confirmModal" class="modal-overlay">
-    <div class="modal-box" style="width:520px">
-        <h3 style="color:red">⚠ ตรวจสอบข้อมูลก่อน Import</h3>
-        <div id="previewBox"></div>
+        <small style="color:red">
+            • เลือกได้ไม่เกิน 2 ไฟล์ <br>
+            • ขนาดรวมไม่เกิน 10MB
+        </small>
 
         <div class="modal-actions">
-            <button class="btn-upload" onclick="confirmImport()">Yes</button>
-            <button class="btn-cancel" onclick="closeConfirm()">No</button>
+            <button class="btn-upload" onclick="goConfirm()">Upload</button>
+            <button class="btn-cancel" onclick="closeImport()">Cancel</button>
         </div>
     </div>
 </div>
+
+<!-- POPUP 2 : CONFIRM -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-box" style="width:520px">
+        <h3 style="color:red">⚠ Confirm Import</h3>
+
+        <ul style="text-align:left;font-size:14px">
+            <li>Header ต้องตรงตาม template</li>
+            <li>ข้อมูลต้องไม่มีช่องว่างสำคัญ</li>
+            <li>วันที่ต้องเป็น format ที่รองรับ</li>
+        </ul>
+
+        <div id="analyzeResult" style="font-size:13px"></div>
+
+        <div class="modal-actions">
+            <button class="btn-upload" onclick="startImport()">Confirm</button>
+            <button class="btn-cancel" onclick="backToImport()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- POPUP 3 : RESULT -->
+<div id="resultModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>ผลลัพธ์การ Import</h3>
+        <div id="resultText">Processing...</div>
+
+        <div class="modal-actions">
+            <button class="btn-upload" onclick="goProducts()">ไปดูข้อมูล</button>
+            <button class="btn-cancel" onclick="closeResult()">ปิด</button>
+        </div>
+    </div>
+</div>
+
 
 
 <script>
@@ -252,50 +270,81 @@
 </script>
 
 <script>
-    document.getElementById("csvForm").addEventListener("submit", async e => {
-        e.preventDefault()
+    let selectedFiles = []
 
-        const file = document.getElementById("csvFile").files[0]
+    function openCsvModal() {
+        document.getElementById("importModal").style.display = "flex"
+    }
+
+    function closeImport() {
+        selectedFiles = []
+        document.getElementById("importModal").style.display = "none"
+    }
+
+    document.getElementById("importFiles").addEventListener("change", e => {
+        selectedFiles = [...e.target.files]
+        const list = selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
+        document.getElementById("fileList").innerHTML = list
+    })
+
+    /* ---------- Popup 1 → 2 ---------- */
+    async function goConfirm() {
+        if (selectedFiles.length === 0) {
+            alert("กรุณาเลือกไฟล์")
+            return
+        }
+
         const fd = new FormData()
-        fd.append("csv_file", file)
+        selectedFiles.forEach(f => fd.append("files[]", f))
 
-        const res = await fetch("/products/import-csv/preview", {
+        const res = await fetch("/products/import/analyze", {
             method: "POST",
             body: fd
         })
-        const data = await res.json()
 
+        const data = await res.json()
         if (!data.ok) {
             alert(data.error)
             return
         }
 
-        let html = `<p>พบข้อมูลทั้งหมด ${data.total} รายการ</p>`
-        html += "<table border='1' width='100%'><tr>"
-        data.headers.forEach(h => html += `<th>${h}</th>`)
-        html += "</tr>"
+        document.getElementById("analyzeResult").innerHTML =
+            data.files.map(f =>
+                `✔ ${f.filename} (${f.total} rows)`
+            ).join("<br>")
 
-        data.preview.forEach(r => {
-            html += "<tr>"
-            data.headers.forEach(h => html += `<td>${r[h] ?? ""}</td>`)
-            html += "</tr>"
-        })
-        html += "</table>"
-
-        document.getElementById("previewBox").innerHTML = html
+        document.getElementById("importModal").style.display = "none"
         document.getElementById("confirmModal").style.display = "flex"
-    })
-
-    async function confirmImport() {
-        const res = await fetch("/products/import-csv/confirm", { method: "POST" })
-        const data = await res.json()
-
-        alert(`Import สำเร็จ ${data.success} | ล้มเหลว ${data.failed}`)
-        window.location.href = "/products"
     }
 
-    function closeConfirm() {
+    /* ---------- Popup 2 → 3 ---------- */
+    async function startImport() {
         document.getElementById("confirmModal").style.display = "none"
+        document.getElementById("resultModal").style.display = "flex"
+        document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
+
+        const res = await fetch("/products/import/confirm", { method: "POST" })
+        const data = await res.json()
+
+        if (data.ok) {
+            document.getElementById("resultText").innerHTML =
+                `✅ สำเร็จ ${data.success} <br> ❌ ล้มเหลว ${data.failed}`
+        } else {
+            document.getElementById("resultText").innerText = "❌ " + data.error
+        }
+    }
+
+    function backToImport() {
+        document.getElementById("confirmModal").style.display = "none"
+        document.getElementById("importModal").style.display = "flex"
+    }
+
+    function closeResult() {
+        document.getElementById("resultModal").style.display = "none"
+    }
+
+    function goProducts() {
+        window.location.href = "/products"
     }
 </script>
 
