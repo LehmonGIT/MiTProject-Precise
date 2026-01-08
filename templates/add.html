@@ -12,16 +12,7 @@
         --c8: #b5dfed;
     }
 
-    /* .add-card {
-        background: white;
-        padding: 25px;
-        border-radius: 14px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-        border-left: 6px solid var(--c4);
-        max-width: 850px;
-        margin: auto;
-        margin-top: 20px;
-    } */
+    
 
     .add-card h2 {
         color: var(--c3);
@@ -174,7 +165,103 @@
         opacity: 0.9;
     }
 
+    .modal-card {
+    background: #e8fbf7;
+    padding: 25px;
+    border-radius: 16px;
+    width: 420px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    animation: pop .25s ease;
+    }
 
+    .modal-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--c3);
+    margin-bottom: 20px;
+    }
+
+    .file-box {
+    border: 2px dashed #5ac8a6;
+    padding: 15px;
+    border-radius: 12px;
+    background: white;
+    }
+
+    .choose-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    }
+
+    .file-list {
+    margin-top: 10px;
+    font-size: 14px;
+    }
+
+    .file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3f3f3;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 6px;
+    }
+
+    .file-remove {
+    color: red;
+    cursor: pointer;
+    font-weight: bold;
+    }
+
+    .file-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+    }
+
+    .warning-card {
+    width: 520px;
+    background: #eaffff;
+    border: 2px dashed #ff4d4d;
+    }
+
+    .warning-title {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+    }
+
+    .warning-list {
+    font-size: 14px;
+    margin-bottom: 15px;
+    }
+
+    .example-box {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+    }
+
+    .sample-link {
+    color: #0066cc;
+    font-weight: bold;
+    text-decoration: underline;
+    }
+
+    .confirm-text {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 15px;
+    }
 
 
 </style>
@@ -193,45 +280,72 @@
         </div>
 
 <!-- POPUP 1 : IMPORT -->
+<!-- POPUP 1 -->
 <div id="importModal" class="modal-overlay">
-    <div class="modal-box">
-        <h3>Import CSV / Excel</h3>
+    <div class="modal-card">
 
-        <input type="file" id="importFiles" multiple accept=".csv,.xlsx,.xls">
+        <h3 class="modal-title">
+            <span class="icon">📄</span> Import File
+        </h3>
 
-        <div id="fileList" style="font-size:13px;margin:10px 0"></div>
+        <!-- file chooser -->
+        <div class="file-box">
+            <label class="choose-btn">
+                Choose file
+                <input type="file" id="importFiles" multiple accept=".csv,.xlsx,.xls" hidden>
+            </label>
 
-        <small style="color:red">
-            • เลือกได้ไม่เกิน 2 ไฟล์ <br>
-            • ขนาดรวมไม่เกิน 10MB
-        </small>
+            <div id="fileList" class="file-list">
+                <!-- รายการไฟล์ -->
+            </div>
+        </div>
+
+        <div class="file-hint">
+            * สามารถเลือกได้สูงสุด 2 ไฟล์<br>
+            * ขนาดรวมไม่เกิน 10 MB
+        </div>
 
         <div class="modal-actions">
             <button class="btn-upload" onclick="goConfirm()">Upload</button>
             <button class="btn-cancel" onclick="closeImport()">Cancel</button>
         </div>
+
     </div>
 </div>
+
 
 <!-- POPUP 2 : CONFIRM -->
+
 <div id="confirmModal" class="modal-overlay">
-    <div class="modal-box" style="width:520px">
-        <h3 style="color:red">⚠ Confirm Import</h3>
+    <div class="modal-card warning-card">
 
-        <ul style="text-align:left;font-size:14px">
-            <li>Header ต้องตรงตาม template</li>
-            <li>ข้อมูลต้องไม่มีช่องว่างสำคัญ</li>
-            <li>วันที่ต้องเป็น format ที่รองรับ</li>
-        </ul>
+        <h3 class="warning-title">⚠ WARNING ⚠</h3>
 
-        <div id="analyzeResult" style="font-size:13px"></div>
+        <ol class="warning-list">
+            <li>ชื่อ header ต้องตรงตามไฟล์ตัวอย่าง</li>
+            <li>รองรับเฉพาะ csv utf-8 / xlsx / xls</li>
+            <li>ขนาดรวมไฟล์ไม่เกิน 10 MB</li>
+            <li>ข้อมูลต้องไม่เว้นช่องว่างที่จำเป็น</li>
+            <li>อัปโหลดได้ไม่เกิน 2 ไฟล์</li>
+        </ol>
+
+        <div class="example-box">
+            <span>ตัวอย่างไฟล์</span><br>
+            <a href="/static/sample/mitdata.csv" class="sample-link">mitdata.csv</a>
+        </div>
+
+        <p class="confirm-text">
+            คุณมั่นใจว่าไฟล์เป็นไปตามข้อกำหนดข้างต้น ?
+        </p>
 
         <div class="modal-actions">
-            <button class="btn-upload" onclick="startImport()">Confirm</button>
-            <button class="btn-cancel" onclick="backToImport()">Cancel</button>
+            <button class="btn-upload" onclick="startImport()">Yes</button>
+            <button class="btn-cancel" onclick="backToImport()">No</button>
         </div>
+
     </div>
 </div>
+
 
 
 <!-- POPUP 3 : RESULT -->
@@ -264,9 +378,30 @@ function closeImport() {
 
 document.getElementById("importFiles").addEventListener("change", e => {
   selectedFiles = [...e.target.files]
+  renderFileList()
   const list = selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
   document.getElementById("fileList").innerHTML = list
 })
+
+    function renderFileList() {
+        const list = document.getElementById("fileList")
+        list.innerHTML = ""
+
+        selectedFiles.forEach((f, i) => {
+            const div = document.createElement("div")
+            div.className = "file-item"
+            div.innerHTML = `
+      <span>${f.name}</span>
+      <span class="file-remove" onclick="removeFile(${i})">✖</span>
+    `
+            list.appendChild(div)
+        })
+    }
+
+    function removeFile(index) {
+        selectedFiles.splice(index, 1)
+        renderFileList()
+    }
 
 /* ---------- Popup 1 → 2 ---------- */
 async function goConfirm() {
