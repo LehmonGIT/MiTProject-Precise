@@ -367,6 +367,10 @@
 <script>
 let selectedFiles = []
 
+const fileInput = document.getElementById("importFiles")
+const fileList = document.getElementById("importList")
+
+
 function openCsvModal() {
   document.getElementById("importModal").style.display = "flex"
 }
@@ -379,8 +383,7 @@ function closeImport() {
 document.getElementById("importFiles").addEventListener("change", e => {
   selectedFiles = [...e.target.files]
   renderFileList()
-  const list = selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
-  document.getElementById("fileList").innerHTML = list
+ 
 })
 
     function renderFileList() {
@@ -413,24 +416,37 @@ async function goConfirm() {
   const fd = new FormData()
   selectedFiles.forEach(f => fd.append("files[]", f))
 
-  const res = await fetch("/products/import/analyze", {
-    method: "POST",
-    body: fd
-  })
+  try {
 
-  const data = await res.json()
-  if (!data.ok) {
-    alert(data.error)
-    return
-  }
+      const res = await fetch("/products/import/analyze", {
+          method: "POST",
+          body: fd
+      })
 
-  document.getElementById("analyzeResult").innerHTML =
-    data.files.map(f =>
-      `✔ ${f.filename} (${f.total} rows)`
-    ).join("<br>")
+      if(!res.ok) {
+        throw new Error("server error")
+      }
 
-  document.getElementById("importModal").style.display = "none"
-  document.getElementById("confirmModal").style.display = "flex"
+      const data = await res.json()
+      if (!data.ok) {
+          alert(data.error)
+          return
+      }
+
+      document.getElementById("analyzeResult").innerHTML =
+          data.files.map(f =>
+              `✔ ${f.filename} (${f.total} rows)`
+          ).join("<br>")
+
+      document.getElementById("importModal").style.display = "none"
+      document.getElementById("confirmModal").style.display = "flex"
+
+
+    } catch (err) {
+        console.error(err)
+        alert("ไม่สามารถวิเคราะห์ไฟล์ได้")
+    }
+    
 }
 
 /* ---------- Popup 2 → 3 ---------- */
