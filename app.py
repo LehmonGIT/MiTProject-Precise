@@ -128,7 +128,7 @@ def import_analyze():
             errors.append(f"{file.filename} : {str(e)}")
 
     if errors:
-        return {"ok": False, "error": errors}, 400
+        return {"ok": False, "error": errors}
 
     # 👉 เก็บไว้รอ confirm
     session["import_buffer"] = analyzed_data
@@ -214,20 +214,6 @@ def import_confirm():
         "failed": failed,
         "errors": errors[:5]  # กัน error ยาว
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

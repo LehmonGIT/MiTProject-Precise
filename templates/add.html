@@ -423,10 +423,6 @@ async function goConfirm() {
           body: fd
       })
 
-      if(!res.ok) {
-        throw new Error("server error")
-      }
-
       const data = await res.json()
       if (!data.ok) {
           alert(data.error)
@@ -444,7 +440,7 @@ async function goConfirm() {
 
     } catch (err) {
         console.error(err)
-        alert("ไม่สามารถวิเคราะห์ไฟล์ได้")
+        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้")
     }
     
 }
