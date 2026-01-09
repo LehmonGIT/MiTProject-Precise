@@ -416,7 +416,6 @@ async function goConfirm() {
   const fd = new FormData()
   selectedFiles.forEach(f => fd.append("files[]", f))
 
-  try {
 
       const res = await fetch("/products/import/analyze", {
           method: "POST",
@@ -429,19 +428,9 @@ async function goConfirm() {
           return
       }
 
-      document.getElementById("analyzeResult").innerHTML =
-          data.files.map(f =>
-              `✔ ${f.filename} (${f.total} rows)`
-          ).join("<br>")
-
       document.getElementById("importModal").style.display = "none"
       document.getElementById("confirmModal").style.display = "flex"
 
-
-    } catch (err) {
-        console.error(err)
-        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้")
-    }
     
 }
 
@@ -449,9 +438,10 @@ async function goConfirm() {
 async function startImport() {
   document.getElementById("confirmModal").style.display = "none"
   document.getElementById("resultModal").style.display = "flex"
-  document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
+  document.getElementById("resultText").innerText = "กำลังประมวลผล"
 
   const res = await fetch("/products/import/confirm", { method: "POST" })
+  
   const data = await res.json()
 
   if (data.ok) {

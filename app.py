@@ -71,7 +71,13 @@ def import_analyze():
     if not files or len(files) > MAX_FILES:
         return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
 
-    total_size = sum(f.content_length or 0 for f in files)
+    total_size = 0
+    for f in files:
+        f.steam.seek(0,2)
+        total_size += f.steam.tell()
+        f.strem.seek(0)
+
+
     if total_size > MAX_TOTAL_SIZE:
         return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
 
@@ -128,7 +134,7 @@ def import_analyze():
             errors.append(f"{file.filename} : {str(e)}")
 
     if errors:
-        return {"ok": False, "error": errors}
+        return {"ok": False, "error": errors}, 400
 
     # 👉 เก็บไว้รอ confirm
     session["import_buffer"] = analyzed_data
