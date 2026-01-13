@@ -1,8 +1,4 @@
-
-{% extends "layout.html" %}
-{% block content %}
-
-<style>
+{% extends "layout.html" %} {% block content %} <style>
     :root {
         --c1: #eb7f22;
         --c2: #e48e41;
@@ -11,8 +7,6 @@
         --c5: #f0f9f5;
         --c8: #b5dfed;
     }
-
-    
 
     .add-card h2 {
         color: var(--c3);
@@ -82,26 +76,27 @@
         border-radius: 8px;
         width: 100%;
     }
-    /* ส่วนของอัพไฟล์ */
 
+    /* ส่วนของอัพไฟล์ */
     .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 999;
-    align-items: center;
-    justify-content: center;
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 999;
+        align-items: center;c
+        justify-content: center;
     }
+
 
     /* modal box */
     .modal-box {
-        background: var(--c5);     
+        background: var(--c5);
         padding: 25px 30px;
         border-radius: 14px;
         width: 360px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         animation: pop 0.25s ease;
     }
 
@@ -126,7 +121,7 @@
     }
 
     .btn-upload {
-        background: var(--c4);       
+        background: var(--c4);
         color: white;
         border: none;
         padding: 8px 18px;
@@ -136,7 +131,7 @@
     }
 
     .btn-cancel {
-        background: var(--c2);      
+        background: var(--c2);
         color: white;
         border: none;
         padding: 8px 18px;
@@ -146,12 +141,20 @@
 
     /* animation */
     @keyframes pop {
-        from { transform: scale(0.9); opacity: 0; }
-        to   { transform: scale(1); opacity: 1; }
+        from {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 
     .btn-import {
-        background: var(--c4);   /* เขียว */
+        background: var(--c4);
+        /* เขียว */
         color: white;
         border: none;
         padding: 10px 22px;
@@ -164,397 +167,140 @@
     .btn-import:hover {
         opacity: 0.9;
     }
-
-    .modal-card {
-    background: #e8fbf7;
-    padding: 25px;
-    border-radius: 16px;
-    width: 420px;
-    box-shadow: 0 12px 30px rgba(0,0,0,.25);
-    animation: pop .25s ease;
-    }
-
-    .modal-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--c3);
-    margin-bottom: 20px;
-    }
-
-    .file-box {
-    border: 2px dashed #5ac8a6;
-    padding: 15px;
-    border-radius: 12px;
-    background: white;
-    }
-
-    .choose-btn {
-    background: #fff;
-    border: 1px solid #ccc;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    }
-
-    .file-list {
-    margin-top: 10px;
-    font-size: 14px;
-    }
-
-    .file-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f3f3f3;
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin-top: 6px;
-    }
-
-    .file-remove {
-    color: red;
-    cursor: pointer;
-    font-weight: bold;
-    }
-
-    .file-hint {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #666;
-    }
-
-    .warning-card {
-    width: 520px;
-    background: #eaffff;
-    border: 2px dashed #ff4d4d;
-    }
-
-    .warning-title {
-    color: red;
-    text-align: center;
-    margin-bottom: 15px;
-    }
-
-    .warning-list {
-    font-size: 14px;
-    margin-bottom: 15px;
-    }
-
-    .example-box {
-    background: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 10px;
-    }
-
-    .sample-link {
-    color: #0066cc;
-    font-weight: bold;
-    text-decoration: underline;
-    }
-
-    .confirm-text {
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 15px;
-    }
-
-
 </style>
 
 <div class="add-card">
     <h2>Add New Product</h2>
+    <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;"> 
+        <button type="button" class="btn-import" onclick="openCsvModal()"> 
+            Import CSV </button>
 
-        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-            <button type="button" class="btn-import" onclick="openCsvModal()">
-                Import CSV
-            </button>
-    
             <button type="button" class="btn-save" style="background:var(--c4)" onclick="showMode('manual')">
-                Add Manual
-            </button>
-        </div>
+            Add Manual </button>
+    </div>
 
 <!-- POPUP 1 : IMPORT -->
-<!-- POPUP 1 -->
 <div id="importModal" class="modal-overlay">
-    <div class="modal-card">
-
-        <h3 class="modal-title">
-            <span class="icon">📄</span> Import File
-        </h3>
-
-        <!-- file chooser -->
-        <div class="file-box">
-            <label class="choose-btn">
-                Choose file
-                <input type="file" id="importFiles" multiple accept=".csv,.xlsx,.xls" hidden>
-            </label>
-
-            <div id="fileList" class="file-list">
-                <!-- รายการไฟล์ -->
-            </div>
+    <div class="modal-box">
+        <h3>Import CSV / Excel</h3> <input type="file" id="importFiles" multiple accept=".csv,.xlsx,.xls">
+        <div id="fileList" style="font-size:13px;margin:10px 0"></div> <small style="color:red">
+             • เลือกได้ไม่เกิน 2ไฟล์ <br> 
+            • ขนาดรวมไม่เกิน 10MB </small>
+        <div class="modal-actions"> <button class="btn-upload" onclick="goConfirm()">
+            Upload</button> 
+            <button class="btn-cancel"onclick="closeImport()">Cancel</button>
         </div>
-
-        <div class="file-hint">
-            * สามารถเลือกได้สูงสุด 2 ไฟล์<br>
-            * ขนาดรวมไม่เกิน 10 MB
-        </div>
-
-        <div class="modal-actions">
-            <button class="btn-upload" onclick="goConfirm()">Upload</button>
-            <button class="btn-cancel" onclick="closeImport()">Cancel</button>
-        </div>
-
     </div>
 </div>
-
 
 <!-- POPUP 2 : CONFIRM -->
-
 <div id="confirmModal" class="modal-overlay">
-    <div class="modal-card warning-card">
+    <div class="modal-box" style="width:520px">
+        <h3 style="color:red">⚠ Confirm Import</h3>
+        <ul style="text-align:left;font-size:14px">
+            <li>Header ต้องตรงตาม template</li>
+            <li>ข้อมูลต้องไม่มีช่องว่างสำคัญ</li>
+            <li>วันที่ต้องเป็น format ที่รองรับ</li>
+        </ul>
 
-        <h3 class="warning-title">⚠ WARNING ⚠</h3>
-
-        <ol class="warning-list">
-            <li>ชื่อ header ต้องตรงตามไฟล์ตัวอย่าง</li>
-            <li>รองรับเฉพาะ csv utf-8 / xlsx / xls</li>
-            <li>ขนาดรวมไฟล์ไม่เกิน 10 MB</li>
-            <li>ข้อมูลต้องไม่เว้นช่องว่างที่จำเป็น</li>
-            <li>อัปโหลดได้ไม่เกิน 2 ไฟล์</li>
-        </ol>
-
-        <div class="example-box">
-            <span>ตัวอย่างไฟล์</span><br>
-            <a href="/static/sample/mitdata.csv" class="sample-link">mitdata.csv</a>
+        <div id="analyzeResult" style="font-size:13px"></div>
+        <div class="modal-actions"> <button class="btn-upload" onclick="startImport()">Confirm</button> <button
+                class="btn-cancel" onclick="backToImport()">Cancel</button> 
         </div>
-
-        <p class="confirm-text">
-            คุณมั่นใจว่าไฟล์เป็นไปตามข้อกำหนดข้างต้น ?
-        </p>
-
-        <div class="modal-actions">
-            <button class="btn-upload" onclick="startImport()">Yes</button>
-            <button class="btn-cancel" onclick="backToImport()">No</button>
-        </div>
-
     </div>
 </div>
-
-
 
 <!-- POPUP 3 : RESULT -->
 <div id="resultModal" class="modal-overlay">
     <div class="modal-box">
         <h3>ผลลัพธ์การ Import</h3>
         <div id="resultText">Processing...</div>
-
-        <div class="modal-actions">
-            <button class="btn-upload" onclick="goProducts()">ไปดูข้อมูล</button>
-            <button class="btn-cancel" onclick="closeResult()">ปิด</button>
-        </div>
+        <div class="modal-actions"> <button class="btn-upload" onclick="goProducts()">ไปดูข้อมูล</button> <button
+                class="btn-cancel" onclick="closeResult()">ปิด</button> </div>
     </div>
 </div>
 
-
-
+<script> 
+    
+    function closeCsvModal() { 
+        document.getElementById("csvModal").style.display = "none"; 
+    } 
+    function showMode(mode) { 
+        document.getElementById("manualForm").style.display = mode === "manual" ? "block" : "none";
+    }
+</script> 
 
 <script>
-let selectedFiles = []
+    let selectedFiles = []
 
-const fileInput = document.getElementById("importFiles")
-// const fileList = document.getElementById("importList")
-
-
-function openCsvModal() {
-  document.getElementById("importModal").style.display = "flex"
-}
-
-function closeImport() {
-  selectedFiles = []
-  document.getElementById("importModal").style.display = "none"
-}
-
-document.getElementById("importFiles").addEventListener("change", e => {
-  selectedFiles = [...e.target.files]
-  renderFileList()
- 
-})
-
-    function renderFileList() {
-        const list = document.getElementById("fileList")
-        list.innerHTML = ""
-
-        selectedFiles.forEach((f, i) => {
-            const div = document.createElement("div")
-            div.className = "file-item"
-            div.innerHTML = `
-      <span>${f.name}</span>
-      <span class="file-remove" onclick="removeFile(${i})">✖</span>
-    `
-            list.appendChild(div)
-        })
+    function openCsvModal() {
+        document.getElementById("importModal").style.display = "flex"
     }
 
-    function removeFile(index) {
-        selectedFiles.splice(index, 1)
-        renderFileList()
+    function closeImport() {
+        selectedFiles = []
+        document.getElementById("importModal").style.display = "none"
     }
 
-/* ---------- Popup 1 → 2 ---------- */
-async function goConfirm() {
-  if (selectedFiles.length === 0) {
-    alert("กรุณาเลือกไฟล์")
-    return
-  }
-
-  const fd = new FormData()
-  selectedFiles.forEach(f => fd.append("files[]", f))
-
-
-      const res = await fetch("/products/import/analyze", {
-          method: "POST",
-          body: fd,
-          credentials: "same-origin"
-      })
-
-      const data = await res.json()
-      if (!data.ok) {
-          alert(Array.isArray(data.error) ? data.error.join("\n") : data.error)
-          return
-      }
-
-      document.getElementById("importModal").style.display = "none"
-      document.getElementById("confirmModal").style.display = "flex"
-
-    
-}
-
-/* ---------- Popup 2 → 3 ---------- */
-async function startImport() {
-  document.getElementById("confirmModal").style.display = "none"
-  document.getElementById("resultModal").style.display = "flex"
-  document.getElementById("resultText").innerText = "กำลังประมวลผล"
-
-  const res = await fetch("/products/import/confirm", { 
-    method: "POST",
-    credentials: "same-origin"
+    document.getElementById("importFiles").addEventListener("change", e => {
+        selectedFiles = [...e.target.files]
+        document.getElementById("fileList").innerHTML =
+            selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
     })
-  
-  const data = await res.json()
 
-  if (data.ok) {
-    document.getElementById("resultText").innerHTML =
-      `✅ สำเร็จ ${data.success} <br> ❌ ล้มเหลว ${data.failed}`
-  } else {
-    document.getElementById("resultText").innerText = "❌ " + data.error
-  }
-}
+    /* Popup 1 → 2 */
+    async function goConfirm() {
+        if (!selectedFiles.length) {
+            alert("กรุณาเลือกไฟล์")
+            return
+        }
 
-function backToImport() {
-  document.getElementById("confirmModal").style.display = "none"
+        const fd = new FormData()
+        selectedFiles.forEach(f => fd.append("files[]", f))
 
-//   แก้ล่าสุด
-//   document.getElementById("importModal").style.display = "flex"
-}
+        const res = await fetch("/products/import/analyze", {
+            method: "POST",
+            body: fd
+        })
 
-function closeResult() {
-  document.getElementById("resultModal").style.display = "none"
-}
+        const data = await res.json()
+        if (!data.ok) {
+            alert(data.error)
+            return
+        }
 
-function goProducts() {
-  window.location.href = "/products"
-}
+        document.getElementById("analyzeResult").innerHTML =
+            data.files.map(f => `✔ ${f.filename} (${f.total} rows)`).join("<br>")
+
+        document.getElementById("importModal").style.display = "none"
+        document.getElementById("confirmModal").style.display = "flex"
+    }
+
+    /* Popup 2 → 3 */
+    async function startImport() {
+        document.getElementById("confirmModal").style.display = "none"
+        document.getElementById("resultModal").style.display = "flex"
+        document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
+
+        const res = await fetch("/products/import/confirm", { method: "POST" })
+        const data = await res.json()
+
+        document.getElementById("resultText").innerHTML = data.ok
+            ? `✅ สำเร็จ ${data.success}<br>❌ ล้มเหลว ${data.failed}`
+            : "❌ " + data.error
+    }
+
+    function backToImport() {
+        document.getElementById("confirmModal").style.display = "none"
+        document.getElementById("importModal").style.display = "flex"
+    }
+
+    function closeResult() {
+        document.getElementById("resultModal").style.display = "none"
+    }
 </script>
 
-
-
-
-
-    <form id="manualForm" method="POST" enctype="multipart/form-data">
-
-            <!-- <table>
-                <tr>
-                    <td>Company</td>
-                    <td><input type="text" name="company"></td>
-                </tr>
-                <tr>
-                    <td>Business</td>
-                    <td><input type="text" name="business"></td>
-                </tr>
-                <tr>
-                    <td>Core Product</td>
-                    <td><input type="text" name="product"></td>
-                </tr>
-                <tr>
-                    <td>FG Code</td>
-                    <td><input type="text" name="code"></td>
-                </tr>
-                <tr>
-                    <td>Product Type</td>
-                    <td><input type="text" name="product_type"></td>
-                </tr>
-                <tr>
-                    <td>Description</td>
-                    <td><textarea name="descrip"></textarea></td>
-                </tr>
-                <tr>
-                    <td>Production Size</td>
-                    <td><input type="text" name="size"></td>
-                </tr>
-                <tr>
-                    <td>Production Color</td>
-                    <td><input type="text" name="color"></td>
-                </tr>
-                <tr>
-                    <td>MiT</td>
-                    <td><input type="text" name="mit"></td>
-                </tr>
-                <tr>
-                    <td>วันหมดอายุ</td>
-                    <td><input type="date" name="expdate"></td>
-                </tr>
-                <tr>
-                    <td>Factsheet URL</td>
-                    <td><input type="text" name="factsheet"></td>
-                </tr>
-                <tr>
-                    <td>ISO</td>
-                    <td><input type="text" name="ISO"></td>
-                </tr>
-                <tr>
-                    <td>Routine Test</td>
-                    <td><input type="text" name="test"></td>
-                </tr>
-                <tr>
-                    <td>มอก.</td>
-                    <td><input type="text" name="TIS"></td>
-                </tr>
-                <tr>
-                    <td>สมอ.</td>
-                    <td><input type="text" name="TISI"></td>
-                </tr>
-                <tr>
-                    <td>Production Model</td>
-                    <td><input type="text" name="productmodel"></td>
-                </tr>
-
-                <!-- อัพโหลดรูปสินค้า -->
-                <!-- <tr>
-                    <td>Product Image</td>
-                    <td><input type="file" name="image" class="file-input"></td>
-                </tr>
-            </table>
-
-            <button class="btn-save">Save Product</button>
-            <a href="{{ url_for('products') }}" class="btn-back">Back</a>
-        </form> --> 
-    </form>
-</div>
-
+    <button class="btn-save">Save Product</button> <a href="{{ url_for('products') }}" class="btn-back">Back</a> 
+        </form>
+    </div> 
 {% endblock %}
