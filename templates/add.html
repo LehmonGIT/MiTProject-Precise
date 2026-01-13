@@ -368,7 +368,7 @@
 let selectedFiles = []
 
 const fileInput = document.getElementById("importFiles")
-const fileList = document.getElementById("importList")
+// const fileList = document.getElementById("importList")
 
 
 function openCsvModal() {
@@ -419,12 +419,13 @@ async function goConfirm() {
 
       const res = await fetch("/products/import/analyze", {
           method: "POST",
-          body: fd
+          body: fd,
+          credentials: "same-origin"
       })
 
       const data = await res.json()
       if (!data.ok) {
-          alert(data.error)
+          alert(Array.isArray(data.error) ? data.error.join("\n") : data.error)
           return
       }
 
@@ -440,7 +441,10 @@ async function startImport() {
   document.getElementById("resultModal").style.display = "flex"
   document.getElementById("resultText").innerText = "กำลังประมวลผล"
 
-  const res = await fetch("/products/import/confirm", { method: "POST" })
+  const res = await fetch("/products/import/confirm", { 
+    method: "POST",
+    credentials: "same-origin"
+    })
   
   const data = await res.json()
 
@@ -467,9 +471,6 @@ function goProducts() {
   window.location.href = "/products"
 }
 </script>
-
-
-
 
 
 
