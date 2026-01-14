@@ -73,30 +73,38 @@ def import_prepare():
         if len(files) > MAX_FILES:
             return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
 
-        total_size = sum(
-            (f.content_length or 0) for f in files
-        )
-
+        total_size = sum((f.content_length or 0) for f in files)
         if total_size > MAX_TOTAL_SIZE:
-            return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
+            return {"OK" : False, "error ": "ขนาดไฟล์รวมเกิน 10 MB"}, 400
 
-        # ✅ แค่ผ่านเงื่อนไข
+        session["import_files"] = []
+        for f in files:
+            session["import_files"].append({
+                "filename": f.filename,
+                "content": f.read()   # เก็บ raw bytes
+            })
+
         return {
-            "ok": True,
-            "files": [f.filename for f in files]
-        }
+        "ok": True,
+        "files": [f["filename"] for f in session["import_files"]]
+    }
 
 @app.route("/products/import/analyze", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
 def import_analyze():
 
-    files = request.files.getlist("files[]")
+    prepared = session.get("import_files")
+    if not prepared:
+        return {"ok": False, "error": "ไม่มีไฟล์ให้วิเคราะห์"}, 400
+
     analyzed_data = []
     errors = []
 
-    for file in files:
-        name = file.filename.lower()
+    for item in prepared:
+        filename = item["filename"]
+        content = item["content"]
+        name = filename.lower()
 
         if not any(name.endswith(ext) for ext in ALLOWED_EXT):
             errors.append(f"{file.filename} : นามสกุลไม่รองรับ")
@@ -105,12 +113,13 @@ def import_analyze():
         try:
             if name.endswith(".csv"):
                 reader = csv.DictReader(
-                    TextIOWrapper(file.stream, encoding="utf-8-sig")
+                    TextIOWrapper(io.BytesIO(content), encoding="utf-8-sig")
                 )
                 headers = reader.fieldnames
                 rows = list(reader)
+
             else:
-                df = pd.read_excel(file)
+                df = pd.read_excel(io.BytesIO(content))
                 headers = list(df.columns)
                 rows = df.to_dict(orient="records")
 
@@ -118,25 +127,42 @@ def import_analyze():
                 raise Exception("Header ไม่ตรง")
 
             analyzed_data.append({
-                "filename": file.filename,
+                "filename": filename,
                 "rows": rows,
                 "total": len(rows)
             })
 
         except Exception as e:
-            errors.append(f"{file.filename} : {e}")
+            errors.append(f"{filename} : {e}")
+
 
     if errors:
         return {"ok": False, "error": errors}, 400
 
-    session["import_buffer"] = analyzed_data
+    # เขียน DB 
+    conn = get_db()
+    cur = conn.cursor()
+
+    success = failed = 0
+
+    for file in analyzed_data:
+        for row in file["rows"]:
+            try:
+                cur.execute(""" INSERT INTO products (...) VALUES (...) """, (...))
+                success += 1
+            except:
+                failed += 1
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    session.pop("import_files", None)
 
     return {
         "ok": True,
-        "summary": [
-            {"filename": f["filename"], "total": f["total"]}
-            for f in analyzed_data
-        ]
+        "success": success,
+        "failed": failed
     }
 
 
@@ -194,8 +220,11 @@ def import_confirm():
         conn.commit()
 
     except Exception as e:
-        conn.rollback()
-        return {"ok": False, "error": str(e)}, 500
+        print("ERROR:",e)
+        return jsonify({
+        "ok": False,
+        "error": str(e)
+    }), 500
 
     finally:
         cur.close()

@@ -272,7 +272,9 @@
         }
 
         document.getElementById("analyzeResult").innerHTML =
-            data.files.map(f => `✔ ${f.filename} (${f.total} rows)`).join("<br>")
+            data.files.map(name => `✔ ${name}`).join("<br>")
+
+
 
         document.getElementById("importModal").style.display = "none"
         document.getElementById("confirmModal").style.display = "flex"
@@ -286,7 +288,7 @@
 
         const res = await fetch("/products/import/analyze", { 
             method: "POST" ,
-            body: fd,
+
             credentials: "same-origin"
 
         })
@@ -307,7 +309,6 @@
     }
 </script>
 
-    <!-- <button class="btn-save">Save Product</button> <a href="{{ url_for('products') }}" class="btn-back">Back</a> 
-        </form> -->
+
     </div> 
 {% endblock %}
