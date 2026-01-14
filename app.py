@@ -35,7 +35,7 @@ def products():
 
         colnames = [desc[0] for desc in cur.description]
         products = [dict(zip(colnames, row)) for row in products]
-        
+
         cur.close()
         conn.close()
 
@@ -220,6 +220,8 @@ def import_confirm():
 
     except Exception as e:
         print("ERROR:",e)
+        conn.rollback()
+        
         return jsonify({
         "ok": False,
         "error": str(e)
