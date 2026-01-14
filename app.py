@@ -60,27 +60,38 @@ MAX_TOTAL_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_EXT = {".csv", ".xlsx", ".xls"}
 
 
+@app.route("/products/import/prepare", methods=["POST"])
+@login_required
+@role_required(["editor", "admin"])
+def import_prepare():
+
+        files = request.files.getlist("files[]")
+
+        if not files:
+            return {"ok": False, "error": "กรุณาเลือกไฟล์"}, 400
+
+        if len(files) > MAX_FILES:
+            return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
+
+        total_size = sum(
+            (f.content_length or 0) for f in files
+        )
+
+        if total_size > MAX_TOTAL_SIZE:
+            return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
+
+        # ✅ แค่ผ่านเงื่อนไข
+        return {
+            "ok": True,
+            "files": [f.filename for f in files]
+        }
+
 @app.route("/products/import/analyze", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
 def import_analyze():
 
     files = request.files.getlist("files[]")
-
-    # ----- validate file count -----
-    if not files or len(files) > MAX_FILES:
-        return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
-
-    total_size = 0
-    for f in files:
-        f.steam.seek(0,2)
-        total_size += f.steam.tell()
-        f.strem.seek(0)
-
-
-    if total_size > MAX_TOTAL_SIZE:
-        return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
-
     analyzed_data = []
     errors = []
 
@@ -92,61 +103,38 @@ def import_analyze():
             continue
 
         try:
-            # ---------- CSV ----------
             if name.endswith(".csv"):
-                encodings = ["utf-8-sig", "tis-620", "cp1252"]
-                reader = None
-
-                for enc in encodings:
-                    try:
-                        file.stream.seek(0)
-                        reader = csv.DictReader(
-                            TextIOWrapper(file.stream, encoding=enc)
-                        )
-                        break
-                    except UnicodeDecodeError:
-                        continue
-
-                if not reader:
-                    raise Exception("ไม่สามารถอ่าน encoding")
-
+                reader = csv.DictReader(
+                    TextIOWrapper(file.stream, encoding="utf-8-sig")
+                )
                 headers = reader.fieldnames
                 rows = list(reader)
-
-            # ---------- XLSX ----------
             else:
                 df = pd.read_excel(file)
                 headers = list(df.columns)
                 rows = df.to_dict(orient="records")
 
-            # ---------- validate header ----------
             if not REQUIRED_COLS.issubset(headers):
-                raise Exception(f"Header ไม่ตรง ({headers})")
+                raise Exception("Header ไม่ตรง")
 
             analyzed_data.append({
                 "filename": file.filename,
-                "headers": headers,
                 "rows": rows,
                 "total": len(rows)
             })
 
         except Exception as e:
-            errors.append(f"{file.filename} : {str(e)}")
+            errors.append(f"{file.filename} : {e}")
 
     if errors:
         return {"ok": False, "error": errors}, 400
 
-    # 👉 เก็บไว้รอ confirm
     session["import_buffer"] = analyzed_data
 
     return {
         "ok": True,
-        "files": [
-            {
-                "filename": f["filename"],
-                "total": f["total"],
-                "preview": f["rows"][:5]
-            }
+        "summary": [
+            {"filename": f["filename"], "total": f["total"]}
             for f in analyzed_data
         ]
     }

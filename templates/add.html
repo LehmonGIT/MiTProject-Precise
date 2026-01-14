@@ -175,8 +175,8 @@
         <button type="button" class="btn-import" onclick="openCsvModal()"> 
             Import CSV </button>
 
-            <button type="button" class="btn-save" style="background:var(--c4)" onclick="showMode('manual')">
-            Add Manual </button>
+            <!-- <button type="button" class="btn-save" style="background:var(--c4)" onclick="showMode('manual')">
+            Add Manual </button> -->
     </div>
 
 <!-- POPUP 1 : IMPORT -->
@@ -190,6 +190,7 @@
             Upload</button> 
             <button class="btn-cancel"onclick="closeImport()">Cancel</button>
         </div>
+         
     </div>
 </div>
 
@@ -258,9 +259,10 @@
         const fd = new FormData()
         selectedFiles.forEach(f => fd.append("files[]", f))
 
-        const res = await fetch("/products/import/analyze", {
+        const res = await fetch("/products/import/prepare", {
             method: "POST",
-            body: fd
+            body: fd,
+            credentials: "same-origin"
         })
 
         const data = await res.json()
@@ -282,7 +284,12 @@
         document.getElementById("resultModal").style.display = "flex"
         document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
 
-        const res = await fetch("/products/import/confirm", { method: "POST" })
+        const res = await fetch("/products/import/analyze", { 
+            method: "POST" ,
+            body: fd,
+            credentials: "same-origin"
+
+        })
         const data = await res.json()
 
         document.getElementById("resultText").innerHTML = data.ok
@@ -300,7 +307,7 @@
     }
 </script>
 
-    <button class="btn-save">Save Product</button> <a href="{{ url_for('products') }}" class="btn-back">Back</a> 
-        </form>
+    <!-- <button class="btn-save">Save Product</button> <a href="{{ url_for('products') }}" class="btn-back">Back</a> 
+        </form> -->
     </div> 
 {% endblock %}
