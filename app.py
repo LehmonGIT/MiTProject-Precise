@@ -171,6 +171,7 @@ def import_analyze():
 def import_confirm():
 
     buffer = session.get("import_buffer")
+    print("BUFFER:", buffer)
     if not buffer:
         return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
 
