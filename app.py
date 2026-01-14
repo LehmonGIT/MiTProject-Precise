@@ -106,7 +106,7 @@ def import_analyze():
         name = filename.lower()
 
         if not any(name.endswith(ext) for ext in ALLOWED_EXT):
-            errors.append(f"{file.filename} : นามสกุลไม่รองรับ")
+            errors.append(f"{filename} : นามสกุลไม่รองรับ")
             continue
 
         try:
@@ -139,30 +139,32 @@ def import_analyze():
         return {"ok": False, "error": errors}, 400
 
     # เขียน DB 
-    conn = get_db()
-    cur = conn.cursor()
+    # conn = get_db()
+    # cur = conn.cursor()
 
-    success = failed = 0
+    # success = failed = 0
 
-    for file in analyzed_data:
-        for row in file["rows"]:
-            try:
-                cur.execute(""" INSERT INTO products (...) VALUES (...) """, (...))
-                success += 1
-            except:
-                failed += 1
+    # for file in analyzed_data:
+    #     for row in file["rows"]:
+    #         try:
+    #             cur.execute(""" INSERT INTO products (...) VALUES (...) """, (...))
+    #             success += 1
+    #         except:
+    #             failed += 1
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    # conn.commit()
+    # cur.close()
+    # conn.close()
 
-    session.pop("import_files", None)
+    # แทนที่การเขียน DB
+    session["import_buffer"] = analyzed_data
+    session.modified = True
 
     return {
-        "ok": True,
-        "success": success,
-        "failed": failed
-    }
+    "ok": True,
+    "total_files": len(analyzed_data),
+    "total_rows": sum(f["total"] for f in analyzed_data)
+}
 
 
 @app.route("/products/import/confirm", methods=["POST"])
@@ -171,8 +173,10 @@ def import_analyze():
 def import_confirm():
 
     buffer = session.get("import_buffer")
+    
     print("BUFFER:", buffer)
     if not buffer:
+        
         return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
 
     conn = get_db()
@@ -219,6 +223,8 @@ def import_confirm():
                     success += 1
                 except Exception as e:
                     failed += 1
+                    print("ROW ERROR:", row)
+                    print("ERROR:", e)
                     errors.append(str(e))
 
         conn.commit()
@@ -240,6 +246,7 @@ def import_confirm():
         cur.close()
         conn.close()
         session.pop("import_buffer", None)
+    
 
     return {
         "ok": True,
