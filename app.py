@@ -182,6 +182,10 @@ def import_confirm():
     errors = []
 
     try:
+        
+        cur.execute("SELECT COUNT(*) FROM products")
+        print("BEFORE INSERT:", cur.fetchone())
+
         for file in buffer:
             for row in file["rows"]:
                 try:
@@ -218,14 +222,18 @@ def import_confirm():
 
         conn.commit()
 
+        cur.execute("SELECT COUNT(*) FROM products")
+        after_count = cur.fetchone()[0]
+        print("AFTER INSERT:", after_count)
+
+
     except Exception as e:
-        print("ERROR:",e)
+        print("FATAL ERROR:", e)
         conn.rollback()
-        
-        return jsonify({
-        "ok": False,
-        "error": str(e)
-    }), 500
+        return {
+            "ok": False,
+            "error": str(e)
+        }, 500
 
     finally:
         cur.close()
@@ -236,7 +244,7 @@ def import_confirm():
         "ok": True,
         "success": success,
         "failed": failed,
-        "errors": errors[:5]  # กัน error ยาว
+        "errors": errors[:5]  
     }
 
 
