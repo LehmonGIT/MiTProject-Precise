@@ -34,12 +34,10 @@ def products():
         products = cur.fetchall()
 
         colnames = [desc[0] for desc in cur.description]
-
+        products = [dict(zip(colnames, row)) for row in products]
+        
         cur.close()
         conn.close()
-
-        # แปลงเป็น dict
-        products = [dict(zip(colnames, row)) for row in products]
 
         return render_template("products.html", products=products)
     except Exception as e:
