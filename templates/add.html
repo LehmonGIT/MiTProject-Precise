@@ -289,11 +289,11 @@
         const res = await fetch("/products/import/analyze", { 
             method: "POST" ,
 
-            credentials: "same-origin"
-
         })
-        const data = await res.json()
+        const data = await res.json();
+        consile.log(Result);
 
+      
         document.getElementById("resultText").innerHTML = data.ok
             ? `✅ สำเร็จ ${data.success}<br>❌ ล้มเหลว ${data.failed}`
             : "❌ " + data.error

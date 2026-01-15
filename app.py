@@ -93,108 +93,55 @@ def import_prepare():
 @role_required(["editor", "admin"])
 def import_analyze():
 
-    prepared = session.get("import_files")
-    if not prepared:
+
+    files = request.files.getlist("files[]")
+    if not files:
         return {"ok": False, "error": "ไม่มีไฟล์ให้วิเคราะห์"}, 400
 
-    analyzed_data = []
-    errors = []
-
-    for item in prepared:
-        filename = item["filename"]
-        content = item["content"]
-        name = filename.lower()
-
-        if not any(name.endswith(ext) for ext in ALLOWED_EXT):
-            errors.append(f"{filename} : นามสกุลไม่รองรับ")
-            continue
-
-        try:
-            if name.endswith(".csv"):
-                reader = csv.DictReader(
-                    TextIOWrapper(io.BytesIO(content), encoding="utf-8-sig")
-                )
-                headers = reader.fieldnames
-                rows = list(reader)
-
-            else:
-                df = pd.read_excel(io.BytesIO(content))
-                headers = list(df.columns)
-                rows = df.to_dict(orient="records")
-
-            if not REQUIRED_COLS.issubset(headers):
-                raise Exception("Header ไม่ตรง")
-
-            analyzed_data.append({
-                "filename": filename,
-                "rows": rows,
-                "total": len(rows)
-            })
-
-        except Exception as e:
-            errors.append(f"{filename} : {e}")
-
-
-    if errors:
-        return {"ok": False, "error": errors}, 400
-
-    # เขียน DB 
-    # conn = get_db()
-    # cur = conn.cursor()
-
-    # success = failed = 0
-
-    # for file in analyzed_data:
-    #     for row in file["rows"]:
-    #         try:
-    #             cur.execute(""" INSERT INTO products (...) VALUES (...) """, (...))
-    #             success += 1
-    #         except:
-    #             failed += 1
-
-    # conn.commit()
-    # cur.close()
-    # conn.close()
-
-    # แทนที่การเขียน DB
-    session["import_buffer"] = analyzed_data
-    session.modified = True
-
-    return {
-    "ok": True,
-    "total_files": len(analyzed_data),
-    "total_rows": sum(f["total"] for f in analyzed_data)
-}
-
-
-@app.route("/products/import/confirm", methods=["POST"])
-@login_required
-@role_required(["editor", "admin"])
-def import_confirm():
-
-    buffer = session.get("import_buffer")
-    
-    print("BUFFER:", buffer)
-    if not buffer:
-        
-        return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
-
+        # เขียน DB 
     conn = get_db()
     cur = conn.cursor()
+    
 
     success = 0
     failed = 0
     errors = []
 
-    try:
-        
-        cur.execute("SELECT COUNT(*) FROM products")
-        print("BEFORE INSERT:", cur.fetchone())
+    try: 
+            for F in files:
+                filename = f.filename.lower()
 
-        for file in buffer:
-            for row in file["rows"]:
+                if not any(name.endswith(ext) for ext in ALLOWED_EXT):
+                    errors.append(f"{filename} : นามสกุลไม่รองรับ")
+                    continue
+
+
                 try:
-                    cur.execute("""
+                    if filename.endswith(".csv"):
+                        reader = csv.DictReader(
+                            TextIOWrapper(f.stream, encoding="utf-8-sig")
+                        )
+                        headers = reader.fieldnames
+                        rows = list(reader)
+                    else:
+                        df = pd.read_excel(f)
+                        headers = list(df.columns)
+                        rows = df.to_dict(orient="records")
+                except Exception as e:
+                    errors.append(f"{f.filename} : อ่านไฟล์ไม่ได้ ({e})")
+                    continue
+
+                if not REQUIRED_COLS.issubset(headers):
+                    missing = REQUIRED_COLS - set(headers)
+                    errors.append(
+                        f"{f.filename} : Header ขาด {', '.join(missing)}"
+                    )
+                    continue
+
+
+                for row in rows in enumerate(row, start=1):
+                    try:
+                        cur.execute("""
                         INSERT INTO products (
                             company,business,product,code,product_type,
                             mit,mit_issue,mit_due,
@@ -202,51 +149,43 @@ def import_confirm():
                             productmodel,descrip,size,color
                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """, (
-                        row.get("company"),
-                        row.get("business"),
-                        row.get("product"),
-                        row.get("code"),
-                        row.get("product_type"),
-                        row.get("mit"),
-                        row.get("mit_issue") or None,
-                        row.get("mit_due") or None,
-                        row.get("factsheet"),
-                        row.get("iso"),
-                        row.get("test"),
-                        row.get("tis"),
-                        row.get("tisi"),
-                        row.get("productmodel"),
-                        row.get("descrip"),
-                        row.get("size"),
-                        row.get("color"),
-                    ))
-                    success += 1
-                except Exception as e:
-                    failed += 1
-                    print("ROW ERROR:", row)
-                    print("ERROR:", e)
-                    errors.append(str(e))
-
-        conn.commit()
-
-        cur.execute("SELECT COUNT(*) FROM products")
-        after_count = cur.fetchone()[0]
-        print("AFTER INSERT:", after_count)
-
+                            row.get("company"),
+                            row.get("business"),
+                            row.get("product"),
+                            row.get("code"),
+                            row.get("product_type"),
+                            row.get("mit"),
+                            row.get("mit_issue") or None,
+                            row.get("mit_due") or None,
+                            row.get("factsheet"),
+                            row.get("iso"),
+                            row.get("test"),
+                            row.get("tis"),
+                            row.get("tisi"),
+                            row.get("productmodel"),
+                            row.get("descrip"),
+                            row.get("size"),
+                            row.get("color"),
+                        ))
+                        success +=1
+                    except Exception as e:
+                        failed +=1
+                        errors.append(
+                            f"{f.filename} แถว {i} :{e}"
+                            )
+            conn.commit()
 
     except Exception as e:
-        print("FATAL ERROR:", e)
-        conn.rollback()
-        return {
-            "ok": False,
-            "error": str(e)
-        }, 500
+        
+            conn.rollback()
+            return {
+                "ok": False,
+                "error": str(e)
+            }, 500
 
     finally:
-        cur.close()
-        conn.close()
-        session.pop("import_buffer", None)
-    
+            cur.close()
+            conn.close()
 
     return {
         "ok": True,
@@ -254,6 +193,85 @@ def import_confirm():
         "failed": failed,
         "errors": errors[:5]  
     }
+    
+
+
+# @app.route("/products/import/confirm", methods=["POST"])
+# @login_required
+# @role_required(["editor", "admin"])
+# def import_confirm():
+
+#     buffer = session.get("import_buffer")
+    
+#     print("BUFFER:", buffer)
+#     if not buffer:
+        
+#         return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
+
+#     conn = get_db()
+#     cur = conn.cursor()
+
+#     success = 0
+#     failed = 0
+#     errors = []
+
+#     try:
+        
+#         cur.execute("SELECT COUNT(*) FROM products")
+#         print("BEFORE INSERT:", cur.fetchone())
+
+#         for file in buffer:
+#             for row in file["rows"]:
+#                 try:
+#                     cur.execute("""
+#                         INSERT INTO products (
+#                             company,business,product,code,product_type,
+#                             mit,mit_issue,mit_due,
+#                             factsheet,iso,test,tis,tisi,
+#                             productmodel,descrip,size,color
+#                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+#                     """, (
+#                         row.get("company"),
+#                         row.get("business"),
+#                         row.get("product"),
+#                         row.get("code"),
+#                         row.get("product_type"),
+#                         row.get("mit"),
+#                         row.get("mit_issue") or None,
+#                         row.get("mit_due") or None,
+#                         row.get("factsheet"),
+#                         row.get("iso"),
+#                         row.get("test"),
+#                         row.get("tis"),
+#                         row.get("tisi"),
+#                         row.get("productmodel"),
+#                         row.get("descrip"),
+#                         row.get("size"),
+#                         row.get("color"),
+#                     ))
+#                     success += 1
+#                 except Exception as e:
+#                     failed += 1
+#                     print("ROW ERROR:", row)
+#                     print("ERROR:", e)
+#                     errors.append(str(e))
+
+#         conn.commit()
+
+#         cur.execute("SELECT COUNT(*) FROM products")
+#         after_count = cur.fetchone()[0]
+#         print("AFTER INSERT:", after_count)
+
+
+   
+
+#     finally:
+#         cur.close()
+#         conn.close()
+#         session.pop("import_buffer", None)
+    
+
+   
 
 
 
