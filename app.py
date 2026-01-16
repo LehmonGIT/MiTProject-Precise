@@ -108,15 +108,17 @@ def import_analyze():
     errors = []
 
     try: 
-            for F in files:
+            for f in files:
                 filename = f.filename.lower()
 
-                if not any(name.endswith(ext) for ext in ALLOWED_EXT):
+                if not any(filename.endswith(ext) for ext in ALLOWED_EXT):
                     errors.append(f"{filename} : นามสกุลไม่รองรับ")
                     continue
 
 
                 try:
+                    f.stream.seek(0)
+
                     if filename.endswith(".csv"):
                         reader = csv.DictReader(
                             TextIOWrapper(f.stream, encoding="utf-8-sig")
@@ -124,9 +126,11 @@ def import_analyze():
                         headers = reader.fieldnames
                         rows = list(reader)
                     else:
-                        df = pd.read_excel(f)
+                        f.stream.seek(0)
+                        df = pd.read_excel(io.BytesIO(f.read()))
                         headers = list(df.columns)
                         rows = df.to_dict(orient="records")
+
                 except Exception as e:
                     errors.append(f"{f.filename} : อ่านไฟล์ไม่ได้ ({e})")
                     continue
@@ -138,8 +142,9 @@ def import_analyze():
                     )
                     continue
 
+                print("ROWS:", len(rows))
 
-                for row in rows in enumerate(row, start=1):
+                for i , rows in enumerate(rows, start=1):
                     try:
                         cur.execute("""
                         INSERT INTO products (
@@ -149,25 +154,30 @@ def import_analyze():
                             productmodel,descrip,size,color
                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """, (
-                            row.get("company"),
-                            row.get("business"),
-                            row.get("product"),
-                            row.get("code"),
-                            row.get("product_type"),
-                            row.get("mit"),
-                            row.get("mit_issue") or None,
-                            row.get("mit_due") or None,
-                            row.get("factsheet"),
-                            row.get("iso"),
-                            row.get("test"),
-                            row.get("tis"),
-                            row.get("tisi"),
-                            row.get("productmodel"),
-                            row.get("descrip"),
-                            row.get("size"),
-                            row.get("color"),
+                            rows.get("company"),
+                            rows.get("business"),
+                            rows.get("product"),
+                            rows.get("code"),
+                            rows.get("product_type"),
+                            rows.get("mit"),
+                            rows.get("mit_issue") or None,
+                            rows.get("mit_due") or None,
+                            rows.get("factsheet"),
+                            rows.get("iso"),
+                            rows.get("test"),
+                            rows.get("tis"),
+                            rows.get("tisi"),
+                            rows.get("productmodel"),
+                            rows.get("descrip"),
+                            rows.get("size"),
+                            rows.get("color"),
                         ))
                         success +=1
+
+                        if success % 100 == 0:
+                            conn.commit()
+                            print("COMMIT:", success)
+
                     except Exception as e:
                         failed +=1
                         errors.append(
