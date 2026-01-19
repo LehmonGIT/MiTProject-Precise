@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, session, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash
 from auth import auth_bp
 from decorators import login_required, role_required
 import csv
@@ -7,6 +7,9 @@ import io
 from io import TextIOWrapper
 from db import get_db
 import pandas as pd
+import tempfile
+from uuid import uuid4
+
 
 app = Flask(__name__)
 app.secret_key = "dev-secret"
@@ -14,6 +17,9 @@ app.secret_key = "dev-secret"
 # register auth blueprint
 app.register_blueprint(auth_bp)
 
+TEMP_DIR = os.path.join(tempfile.gettempdir(), "mit_import")
+
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 @app.route("/")
 @login_required
@@ -76,7 +82,7 @@ def import_prepare():
         if total_size > MAX_TOTAL_SIZE:
             return {"OK" : False, "error ": "ขนาดไฟล์รวมเกิน 10 MB"}, 400
 
-        session["import_files"] = []
+        temp_ids= []
         for f in files:
             session["import_files"].append({
                 "filename": f.filename,
