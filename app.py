@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, session
 from auth import auth_bp
 from decorators import login_required, role_required
 import csv
@@ -75,6 +75,8 @@ def import_prepare():
         if not files:
             return {"ok": False, "error": "กรุณาเลือกไฟล์"}, 400
 
+        session["import_files"] = []
+
         if len(files) > MAX_FILES:
             return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
 
@@ -82,11 +84,19 @@ def import_prepare():
         if total_size > MAX_TOTAL_SIZE:
             return {"OK" : False, "error ": "ขนาดไฟล์รวมเกิน 10 MB"}, 400
 
-        temp_ids= []
         for f in files:
+            ext = os.path.splitext(f.filename)[1].lower()
+            if ext not in ALLOWED_EXT:
+                return {"ok": False, "error": f"{f.filename} นามสกุลไม่รองรับ"}, 400
+    
+            temp_id = str(uuid4())
+            path = os.path.join(TEMP_DIR, temp_id + ext)
+            f.save(path)
+            
             session["import_files"].append({
+                "temp_id" : temp_id
                 "filename": f.filename,
-                "content": f.read()   # เก็บ raw bytes
+                "path" :path
             })
 
         return {
@@ -100,9 +110,9 @@ def import_prepare():
 def import_analyze():
 
 
-    files = request.files.getlist("files[]")
+    files = session.get("import_files")
     if not files:
-        return {"ok": False, "error": "ไม่มีไฟล์ให้วิเคราะห์"}, 400
+        return {"ok": False, "error": "ไม่มีไฟล์"}, 400
 
         # เขียน DB 
     conn = get_db()
@@ -115,43 +125,27 @@ def import_analyze():
 
     try: 
             for f in files:
-                filename = f.filename.lower()
+                path = f["path"]
+                filename = f["filename"].lower()
 
-                if not any(filename.endswith(ext) for ext in ALLOWED_EXT):
-                    errors.append(f"{filename} : นามสกุลไม่รองรับ")
-                    continue
-
-
-                try:
-                    f.stream.seek(0)
-
-                    if filename.endswith(".csv"):
-                        reader = csv.DictReader(
-                            TextIOWrapper(f.stream, encoding="utf-8-sig")
-                        )
-                        headers = reader.fieldnames
+                if filename.endswith(".csv"):
+                    with open(path, encoding="utf-8-sig") as fh:
+                        reader = csv.DictReader(fh)
                         rows = list(reader)
-                    else:
-                        f.stream.seek(0)
-                        df = pd.read_excel(io.BytesIO(f.read()))
-                        headers = list(df.columns)
-                        rows = df.to_dict(orient="records")
-
-                except Exception as e:
-                    errors.append(f"{f.filename} : อ่านไฟล์ไม่ได้ ({e})")
-                    continue
+                        headers = reader.fieldnames
+                else:
+                    df = pd.read_excel(path)
+                    headers = list(df.columns)
+                    rows = df.to_dict("records")
 
                 if not REQUIRED_COLS.issubset(headers):
-                    missing = REQUIRED_COLS - set(headers)
-                    errors.append(
-                        f"{f.filename} : Header ขาด {', '.join(missing)}"
-                    )
+                    errors.append(f"{f['filename']} header ไม่ครบ")
                     continue
 
-                print("ROWS:", len(rows))
 
                 for i , rows in enumerate(rows, start=1):
                     try:
+                        values = [row.get(col) or None for col in REQUIRED_COLS]
                         cur.execute("""
                         INSERT INTO products (
                             company,business,product,code,product_type,
@@ -159,31 +153,8 @@ def import_analyze():
                             factsheet,iso,test,tis,tisi,
                             productmodel,descrip,size,color
                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """, (
-                            rows.get("company"),
-                            rows.get("business"),
-                            rows.get("product"),
-                            rows.get("code"),
-                            rows.get("product_type"),
-                            rows.get("mit"),
-                            rows.get("mit_issue") or None,
-                            rows.get("mit_due") or None,
-                            rows.get("factsheet"),
-                            rows.get("iso"),
-                            rows.get("test"),
-                            rows.get("tis"),
-                            rows.get("tisi"),
-                            rows.get("productmodel"),
-                            rows.get("descrip"),
-                            rows.get("size"),
-                            rows.get("color"),
-                        ))
+                    """, values)
                         success +=1
-
-                        if success % 100 == 0:
-                            conn.commit()
-                            print("COMMIT:", success)
-
                     except Exception as e:
                         failed +=1
                         errors.append(
@@ -191,17 +162,10 @@ def import_analyze():
                             )
             conn.commit()
 
-    except Exception as e:
-        
-            conn.rollback()
-            return {
-                "ok": False,
-                "error": str(e)
-            }, 500
-
     finally:
             cur.close()
             conn.close()
+            session.pop("import_files", None)
 
     return {
         "ok": True,
