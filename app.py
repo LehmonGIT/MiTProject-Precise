@@ -94,7 +94,7 @@ def import_prepare():
             f.save(path)
             
             session["import_files"].append({
-                "temp_id" : temp_id
+                "temp_id" : temp_id,
                 "filename": f.filename,
                 "path" :path
             })
