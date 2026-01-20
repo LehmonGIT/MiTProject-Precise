@@ -250,6 +250,18 @@ def import_analyze():
 #         conn.close()
 #         session.pop("import_buffer", None)
     
+@app.route("/db-test")
+def db_test():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT 1")
+        cur.fetchone()
+        cur.close()
+        conn.close()
+        return "DB CONNECT OK"
+    except Exception as e:
+        return str(e), 500
 
    
 
