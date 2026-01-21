@@ -65,37 +65,44 @@ REQUIRED_COLS = {
 @login_required
 @role_required(["editor", "admin"])
 def import_prepare():
-
+    try:
         files = request.files.getlist("files[]")
 
-    # 1. จำนวนไฟล์
-
+        # 1. จำนวนไฟล์
         if not files:
-            return {"ok": False, "error": "กรุณาเลือกไฟล์"}, 400
+            return jsonify(ok=False, error="กรุณาเลือกไฟล์"), 400
 
         if len(files) > 2:
-            return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
+            return jsonify(ok=False, error="เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"), 400
 
-    # 2. นามสกุล
-
-        ALLOWED_EXT = {".csv", ".xlsx", ".xls"}
+        # 2. นามสกุล
+        ALLOWED_EXT = (".csv", ".xlsx", ".xls")
         for f in files:
             if not f.filename.lower().endswith(ALLOWED_EXT):
-                return {
-                    "ok": False,
-                    "error": f"ไฟล์ {f.filename} ไม่รองรับ"
-                }, 400
-    
-    # 3. ขนาดรวม
+                return jsonify(
+                    ok=False,
+                    error=f"ไฟล์ {f.filename} ไม่รองรับ"
+                ), 400
 
-        total_size = sum((f.content_length or 0) for f in files)
+        # 3. ขนาดรวม 
+        total_size = 0
+        for f in files:
+            f.stream.seek(0, os.SEEK_END)
+            total_size += f.stream.tell()
+            f.stream.seek(0)
+
         if total_size > 10 * 1024 * 1024:
-            return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
+            return jsonify(ok=False, error="ขนาดไฟล์รวมเกิน 10MB"), 400
 
-        return {
-        "ok": True,
-    
-    }
+        # ผ่านแล้ว
+        return jsonify(
+            ok=True,
+            files=[f.filename for f in files]
+        )
+
+    except Exception as e:
+        print("IMPORT PREPARE ERROR:", e)
+        return jsonify(ok=False, error=str(e)), 500
 
 
 @app.route("/products/import/validate", methods=["POST"])
