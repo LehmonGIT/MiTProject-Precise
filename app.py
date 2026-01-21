@@ -60,10 +60,6 @@ REQUIRED_COLS = {
     "productmodel","descrip","size","color"
 }
 
-MAX_FILES = 2
-MAX_TOTAL_SIZE = 10 * 1024 * 1024  # 10MB
-ALLOWED_EXT = {".csv", ".xlsx", ".xls"}
-
 
 @app.route("/products/import/prepare", methods=["POST"])
 @login_required
@@ -72,183 +68,150 @@ def import_prepare():
 
         files = request.files.getlist("files[]")
 
+    # 1. จำนวนไฟล์
+
         if not files:
             return {"ok": False, "error": "กรุณาเลือกไฟล์"}, 400
 
-        session["import_files"] = []
-
-        if len(files) > MAX_FILES:
+        if len(files) > 2:
             return {"ok": False, "error": "เลือกไฟล์ได้ไม่เกิน 2 ไฟล์"}, 400
 
-        total_size = sum((f.content_length or 0) for f in files)
-        if total_size > MAX_TOTAL_SIZE:
-            return {"OK" : False, "error ": "ขนาดไฟล์รวมเกิน 10 MB"}, 400
+    # 2. นามสกุล
 
+        ALLOWED_EXT = {".csv", ".xlsx", ".xls"}
         for f in files:
-            ext = os.path.splitext(f.filename)[1].lower()
-            if ext not in ALLOWED_EXT:
-                return {"ok": False, "error": f"{f.filename} นามสกุลไม่รองรับ"}, 400
+            if not f.filename.lower().endswith(ALLOWED_EXT):
+                return {
+                    "ok": False,
+                    "error": f"ไฟล์ {f.filename} ไม่รองรับ"
+                }, 400
     
-            temp_id = str(uuid4())
-            path = os.path.join(TEMP_DIR, temp_id + ext)
-            f.save(path)
-            
-            session["import_files"].append({
-                "temp_id" : temp_id,
-                "filename": f.filename,
-                "path" :path
-            })
+    # 3. ขนาดรวม
+
+        total_size = sum((f.content_length or 0) for f in files)
+        if total_size > 10 * 1024 * 1024:
+            return {"ok": False, "error": "ขนาดไฟล์รวมเกิน 10MB"}, 400
 
         return {
         "ok": True,
-        "files": [f["filename"] for f in session["import_files"]]
+    
     }
 
-@app.route("/products/import/analyze", methods=["POST"])
+
+@app.route("/products/import/validate", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
-def import_analyze():
+def import_validate():
 
 
-    files = session.get("import_files")
-    if not files:
-        return {"ok": False, "error": "ไม่มีไฟล์"}, 400
+    file = request.files["file"]
+    
+    df = read_file_to_df(file)  # pandas
 
-        # เขียน DB 
+
+    # 1. ตรวจ header
+
+    missing = [c for c in REQUIRED_COLS if c not in df.columns]
+    if missing:
+        return {
+            "ok": False,
+            "error": f"ขาดคอลัมน์: {', '.join(missing)}"
+        }, 400
+    
+
+    # 2. ตรวจข้อมูลว่าง
+
+    if df["code"].isnull().any():
+        return {"ok": False, "error": "code ห้ามว่าง"}, 400
+
+    # 3. ตรวจซ้ำ DB
+
     conn = get_db()
     cur = conn.cursor()
+
+    cur.execute("SELECT code FROM products")
+    existing = {r[0] for r in cur.fetchall()}
+
+
+    duplicate = df[df["code"].isin(existing)]
+    if not duplicate.empty:
+        return {
+            "ok": False,
+            "error": f"code ซ้ำ {duplicate.iloc[0]['code']}"
+        }, 400
+
+    # เก็บข้อมูลไว้ session (ยังไม่ insert)
+    session["import_rows"] = df.to_dict("records")
+
+    return {
+        "ok": True,
+        "rows": len(df)
+    }
     
+@app.route("/products/import/commit", methods=["POST"])
+@login_required
+def import_commit():
+
+    rows = session.get("import_rows")
+    if not rows:
+        return {"ok": False, "error": "ไม่มีข้อมูลให้บันทึก"}, 400
+
+    conn = get_db()
+    cur = conn.cursor()
 
     success = 0
     failed = 0
-    errors = []
 
-    try: 
-            for f in files:
-                path = f["path"]
-                filename = f["filename"].lower()
+    for r in rows:
+        try:
 
-                if filename.endswith(".csv"):
-                    with open(path, encoding="utf-8-sig") as fh:
-                        reader = csv.DictReader(fh)
-                        rows = list(reader)
-                        headers = reader.fieldnames
-                else:
-                    df = pd.read_excel(path)
-                    headers = list(df.columns)
-                    rows = df.to_dict("records")
-
-                if not REQUIRED_COLS.issubset(headers):
-                    errors.append(f"{f['filename']} header ไม่ครบ")
-                    continue
-
-
-                for i , rows in enumerate(rows, start=1):
-                    try:
-                        values = [row.get(col) or None for col in REQUIRED_COLS]
-                        cur.execute("""
+            cur.execute("""
                         INSERT INTO products (
                             company,business,product,code,product_type,
                             mit,mit_issue,mit_due,
                             factsheet,iso,test,tis,tisi,
                             productmodel,descrip,size,color
                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """, values)
-                        success +=1
-                    except Exception as e:
-                        failed +=1
-                        errors.append(
-                            f"{f.filename} แถว {i} :{e}"
-                            )
-            conn.commit()
+                    """, (
+                            rows.get("company"),
+                            rows.get("business"),
+                            rows.get("product"),
+                            rows.get("code"),
+                            rows.get("product_type"),
+                            rows.get("mit"),
+                            rows.get("mit_issue") or None,
+                            rows.get("mit_due") or None,
+                            rows.get("factsheet"),
+                            rows.get("iso"),
+                            rows.get("test"),
+                            rows.get("tis"),
+                            rows.get("tisi"),
+                            rows.get("productmodel"),
+                            rows.get("descrip"),
+                            rows.get("size"),
+                            rows.get("color"),
+                        ))
+            success +=1
+        except Exception as e:
+            failed +=1
+            errors.append(f"{f.filename} แถว {i} :{e}")
 
-    finally:
-            cur.close()
-            conn.close()
-            session.pop("import_files", None)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    session.pop("import_rows", None)
 
     return {
         "ok": True,
         "success": success,
-        "failed": failed,
-        "errors": errors[:5]  
+        "failed": failed
     }
-    
 
 
-# @app.route("/products/import/confirm", methods=["POST"])
-# @login_required
-# @role_required(["editor", "admin"])
-# def import_confirm():
-
-#     buffer = session.get("import_buffer")
-    
-#     print("BUFFER:", buffer)
-#     if not buffer:
-        
-#         return {"ok": False, "error": "ไม่มีข้อมูลให้ import"}, 400
-
-#     conn = get_db()
-#     cur = conn.cursor()
-
-#     success = 0
-#     failed = 0
-#     errors = []
-
-#     try:
-        
-#         cur.execute("SELECT COUNT(*) FROM products")
-#         print("BEFORE INSERT:", cur.fetchone())
-
-#         for file in buffer:
-#             for row in file["rows"]:
-#                 try:
-#                     cur.execute("""
-#                         INSERT INTO products (
-#                             company,business,product,code,product_type,
-#                             mit,mit_issue,mit_due,
-#                             factsheet,iso,test,tis,tisi,
-#                             productmodel,descrip,size,color
-#                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-#                     """, (
-#                         row.get("company"),
-#                         row.get("business"),
-#                         row.get("product"),
-#                         row.get("code"),
-#                         row.get("product_type"),
-#                         row.get("mit"),
-#                         row.get("mit_issue") or None,
-#                         row.get("mit_due") or None,
-#                         row.get("factsheet"),
-#                         row.get("iso"),
-#                         row.get("test"),
-#                         row.get("tis"),
-#                         row.get("tisi"),
-#                         row.get("productmodel"),
-#                         row.get("descrip"),
-#                         row.get("size"),
-#                         row.get("color"),
-#                     ))
-#                     success += 1
-#                 except Exception as e:
-#                     failed += 1
-#                     print("ROW ERROR:", row)
-#                     print("ERROR:", e)
-#                     errors.append(str(e))
-
-#         conn.commit()
-
-#         cur.execute("SELECT COUNT(*) FROM products")
-#         after_count = cur.fetchone()[0]
-#         print("AFTER INSERT:", after_count)
 
 
-   
 
-#     finally:
-#         cur.close()
-#         conn.close()
-#         session.pop("import_buffer", None)
     
 @app.route("/db-test")
 def db_test():
@@ -263,7 +226,7 @@ def db_test():
     except Exception as e:
         return str(e), 500
 
-   
+
 
 
 

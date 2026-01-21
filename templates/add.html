@@ -186,7 +186,7 @@
         <div id="fileList" style="font-size:13px;margin:10px 0"></div> <small style="color:red">
              • เลือกได้ไม่เกิน 2ไฟล์ <br> 
             • ขนาดรวมไม่เกิน 10MB </small>
-        <div class="modal-actions"> <button class="btn-upload" onclick="goConfirm()">
+        <div class="modal-actions"> <button class="btn-upload" onclick="uploadFiles()">
             Upload</button> 
             <button class="btn-cancel"onclick="closeImport()">Cancel</button>
         </div>
@@ -205,7 +205,9 @@
         </ul>
 
         <div id="analyzeResult" style="font-size:13px"></div>
-        <div class="modal-actions"> <button class="btn-upload" onclick="startImport()">Confirm</button> <button
+        <button class="btn-upload" onclick="validateImport()">ตรวจสอบข้อมูล</button>
+
+        <div class="modal-actions"> <button class="btn-upload" onclick="confirmImport()">Confirm</button> <button
                 class="btn-cancel" onclick="backToImport()">Cancel</button> 
         </div>
     </div>
@@ -250,7 +252,7 @@
     })
 
     /* Popup 1 → 2 */
-    async function goConfirm() {
+    async function uploadFiles() {
         if (!selectedFiles.length) {
             alert("กรุณาเลือกไฟล์")
             return
@@ -262,7 +264,7 @@
         const res = await fetch("/products/import/prepare", {
             method: "POST",
             body: fd,
-            credentials: "same-origin"
+            
         })
 
         const data = await res.json()
@@ -271,34 +273,84 @@
             return
         }
 
+       
         document.getElementById("analyzeResult").innerHTML =
             data.files.map(name => `✔ ${name}`).join("<br>")
 
-
-
-        document.getElementById("importModal").style.display = "none"
-        document.getElementById("confirmModal").style.display = "flex"
+        // เปิด popup2
+        openValidatePopup()
+        
     }
+
+
 
     /* Popup 2 → 3 */
-    async function startImport() {
-        document.getElementById("confirmModal").style.display = "none"
-        document.getElementById("resultModal").style.display = "flex"
-        document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
 
-        const res = await fetch("/products/import/analyze", { 
-            method: "POST" ,
-            credentials: "same-origin"
+    async function validateFile() {
+        // const fd = new FormData()
+        // fd.append("file", selectedFile)
 
+        const res = await fetch("/products/import/validate", {
+            method: "POST",
+            // body: fd
         })
-        const data = await res.json();
-        consile.log(Result);
 
-      
-        document.getElementById("resultText").innerHTML = data.ok
-            ? `✅ สำเร็จ ${data.success}<br>❌ ล้มเหลว ${data.failed}`
-            : "❌ " + data.error
+        const data = await res.json()
+        if (!data.ok) {
+            document.getElementById("analyzeResult").innerHTML =
+                `<span style="color:red">❌ ${data.error}</span>`
+            return
+        }
+        
+         document.getElementById("analyzeResult").innerHTML = `
+        ✔ แถวทั้งหมด: ${data.rows}<br>
+        ✔ Header ถูกต้อง<br>
+        ✔ ข้อมูลพร้อมบันทึก
+    `
+
+        // เปิดให้กด Confirm ได้
+        document.querySelector("#confirmModal .btn-upload").disabled = false
     }
+    
+    
+    async function confirmImport() {
+        showProcessingPopup()  
+
+        const res = await fetch("/products/import/commit", {
+            method: "POST"
+        })
+
+        const data = await res.json()
+        
+        if (!data.ok) {
+            document.getElementById("resultText").innerText =
+                "❌ " + data.error
+            return
+        }
+
+        document.getElementById("resultText").innerText =
+            `✅ บันทึกสำเร็จ ${data.inserted} รายการ`
+
+            
+        closePopup()
+        reloadProductTable()
+    }
+
+    function openValidatePopup() {
+            document.getElementById("importModal").style.display = "none"
+            document.getElementById("confirmModal").style.display = "flex"
+        }
+
+        function showProcessingPopup() {
+            document.getElementById("confirmModal").style.display = "none"
+            document.getElementById("resultModal").style.display = "flex"
+            document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
+        }
+
+        function showError(msg) {
+            alert(msg)
+        }
+
 
     function goProducts() {
         window.location.href = "/products"
