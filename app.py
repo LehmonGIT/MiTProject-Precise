@@ -111,12 +111,12 @@ def import_prepare():
 def import_validate():
 
 
-    file = request.files["file"]
+   files = session.get("import_files")
     
     df = read_file_to_df(file)  # pandas
 
 
-    # 1. ตรวจ header
+    # 1. ตรวจ headerc
 
     missing = [c for c in REQUIRED_COLS if c not in df.columns]
     if missing:

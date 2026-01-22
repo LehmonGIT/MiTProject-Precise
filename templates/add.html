@@ -205,9 +205,9 @@
         </ul>
 
         <div id="analyzeResult" style="font-size:13px"></div>
-        <button class="btn-upload" onclick="validateImport()">ตรวจสอบข้อมูล</button>
+        
 
-        <div class="modal-actions"> <button class="btn-upload" onclick="confirmImport()">Confirm</button> <button
+        <div class="modal-actions"> <button class="btn-upload" onclick="validateImport()">Confirm</button> <button
                 class="btn-cancel" onclick="backToImport()">Cancel</button> 
         </div>
     </div>
@@ -286,9 +286,9 @@
 
     /* Popup 2 → 3 */
 
-    async function validateFile() {
-        // const fd = new FormData()
-        // fd.append("file", selectedFile)
+    async function validateImport() {
+        const result = document.getElementById("analyzeResult")
+        result.innerHTML = "⏳ กำลังตรวจสอบข้อมูล"
 
         const res = await fetch("/products/import/validate", {
             method: "POST",
@@ -302,26 +302,32 @@
             return
         }
         
-         document.getElementById("analyzeResult").innerHTML = `
-        ✔ แถวทั้งหมด: ${data.rows}<br>
-        ✔ Header ถูกต้อง<br>
-        ✔ ข้อมูลพร้อมบันทึก
-    `
-
-        // เปิดให้กด Confirm ได้
-        document.querySelector("#confirmModal .btn-upload").disabled = false
+        document.getElementById("confirmModal").style.display = "none"
+        document.getElementById("resultModal").style.display = "flex"
+    
+        startCommit()
+    
     }
     
     
-    async function confirmImport() {
+    async function startCommit() {
         showProcessingPopup()  
 
         const res = await fetch("/products/import/commit", {
-            method: "POST"
+            method: "POST",                             
+            credentials: "same-origin"
+
         })
 
-        const data = await res.json()
+        if (!res.ok) {
+            const text = await res.text()
+            document.getElementById("analyzeResult").innerHTML =
+                "<span style='color:red'>❌ " + text + "</span>"
+            return
+        }
         
+        const data = await res.json()
+
         if (!data.ok) {
             document.getElementById("resultText").innerText =
                 "❌ " + data.error
@@ -331,9 +337,9 @@
         document.getElementById("resultText").innerText =
             `✅ บันทึกสำเร็จ ${data.inserted} รายการ`
 
-            
-        closePopup()
-        reloadProductTable()
+    
+
+        goProducts()
     }
 
     function openValidatePopup() {
@@ -344,7 +350,7 @@
         function showProcessingPopup() {
             document.getElementById("confirmModal").style.display = "none"
             document.getElementById("resultModal").style.display = "flex"
-            document.getElementById("resultText").innerText = "⏳ กำลังประมวลผล..."
+            document.getElementById("analyzeResult").innerText = "⏳ กำลังตรวจสอบและบันทึกข้อมูล..."
         }
 
         function showError(msg) {
@@ -356,14 +362,7 @@
         window.location.href = "/products"
     }
 
-    function backToImport() {
-        document.getElementById("confirmModal").style.display = "none"
-        document.getElementById("importModal").style.display = "flex"
-    }
 
-    function closeResult() {
-        document.getElementById("resultModal").style.display = "none"
-    }
 </script>
 
 
