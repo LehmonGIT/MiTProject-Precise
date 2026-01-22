@@ -14,6 +14,10 @@ from uuid import uuid4
 app = Flask(__name__)
 app.secret_key = "dev-secret"
 
+
+UPLOAD_DIR = "/tmp/mit_import"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 # register auth blueprint
 app.register_blueprint(auth_bp)
 
@@ -94,11 +98,27 @@ def import_prepare():
         if total_size > 10 * 1024 * 1024:
             return jsonify(ok=False, error="ขนาดไฟล์รวมเกิน 10MB"), 400
 
-        # ผ่านแล้ว
-        return jsonify(
-            ok=True,
-            files=[f.filename for f in files]
-        )
+        saved_files = []
+
+        for f in files:
+            
+            ext = os.path.splitext(f.filename)[1]
+            filename = f"{uuid.uuid4()}{ext}"
+            path = os.path.join(UPLOAD_DIR, filename)
+
+        
+            f.save(path)
+
+            saved_files.append({
+                "filename": f.filename,  
+                "path": path          
+            })
+
+        # เก็บไฟล์ไว้ใช้ใน popup2 → /validate
+        session["import_files"] = saved_files
+
+        return jsonify(ok=True)
+
 
     except Exception as e:
         print("IMPORT PREPARE ERROR:", e)
