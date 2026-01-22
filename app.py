@@ -8,7 +8,7 @@ from io import TextIOWrapper
 from db import get_db
 import pandas as pd
 import tempfile
-from uuid import uuid4
+import uuid
 
 
 app = Flask(__name__)
