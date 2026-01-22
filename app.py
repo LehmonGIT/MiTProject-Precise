@@ -195,8 +195,9 @@ def import_commit():
 
     success = 0
     failed = 0
+    errors = []
 
-    for r in rows:
+    for i, r in enumerate(rows, start=1):
         try:
 
             cur.execute("""
@@ -207,28 +208,29 @@ def import_commit():
                             productmodel,descrip,size,color
                         ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """, (
-                            rows.get("company"),
-                            rows.get("business"),
-                            rows.get("product"),
-                            rows.get("code"),
-                            rows.get("product_type"),
-                            rows.get("mit"),
-                            rows.get("mit_issue") or None,
-                            rows.get("mit_due") or None,
-                            rows.get("factsheet"),
-                            rows.get("iso"),
-                            rows.get("test"),
-                            rows.get("tis"),
-                            rows.get("tisi"),
-                            rows.get("productmodel"),
-                            rows.get("descrip"),
-                            rows.get("size"),
-                            rows.get("color"),
+                            r.get("company"),
+                            r.get("business"),
+                            r.get("product"),
+                            r.get("code"),
+                            r.get("product_type"),
+                            r.get("mit"),
+                            r.get("mit_issue") or None,
+                            r.get("mit_due") or None,
+                            r.get("factsheet"),
+                            r.get("iso"),
+                            r.get("test"),
+                            r.get("tis"),
+                            r.get("tisi"),
+                            r.get("productmodel"),
+                            r.get("descrip"),
+                            r.get("size"),
+                            r.get("color"),
                         ))
             success +=1
         except Exception as e:
             failed +=1
-            errors.append(f"{f.filename} แถว {i} :{e}")
+            errors.append(f"แถว {i}: {str(e)}")
+
 
     conn.commit()
     cur.close()
@@ -239,7 +241,8 @@ def import_commit():
     return {
         "ok": True,
         "success": success,
-        "failed": failed
+        "failed": failed,
+        errors : errors
     }
 
 
