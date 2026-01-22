@@ -104,56 +104,60 @@ def import_prepare():
         print("IMPORT PREPARE ERROR:", e)
         return jsonify(ok=False, error=str(e)), 500
 
+def read_file_to_df(file):
+    if file["filename"].lower().endswith(".csv"):
+        return pd.read_csv(file["path"])
+    else:
+        return pd.read_excel(file["path"])
+
+
 
 @app.route("/products/import/validate", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
 def import_validate():
+    try:
+        files = session.get("import_files")
+        if not files:
+            return jsonify(ok=False, error="ไม่พบไฟล์ใน session"), 400
 
+        file = files[0]
+        df = read_file_to_df(file)
 
-   files = session.get("import_files")
-    
-    df = read_file_to_df(file)  # pandas
+        # 1. ตรวจ header
+        missing = [c for c in REQUIRED_COLS if c not in df.columns]
+        if missing:
+            return jsonify(
+                ok=False,
+                error=f"ขาดคอลัมน์: {', '.join(missing)}"
+            ), 400
 
+        # 2. ตรวจข้อมูลว่าง
+        if df["code"].isnull().any():
+            return jsonify(ok=False, error="code ห้ามว่าง"), 400
 
-    # 1. ตรวจ headerc
+        # 3. ตรวจซ้ำ DB
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT code FROM products")
+        existing = {r[0] for r in cur.fetchall()}
+        cur.close()
+        conn.close()
 
-    missing = [c for c in REQUIRED_COLS if c not in df.columns]
-    if missing:
-        return {
-            "ok": False,
-            "error": f"ขาดคอลัมน์: {', '.join(missing)}"
-        }, 400
-    
+        dup = df[df["code"].isin(existing)]
+        if not dup.empty:
+            return jsonify(
+                ok=False,
+                error=f"code ซ้ำ {dup.iloc[0]['code']}"
+            ), 400
 
-    # 2. ตรวจข้อมูลว่าง
+        # เก็บไว้รอ commit
+        session["import_rows"] = df.to_dict("records")
 
-    if df["code"].isnull().any():
-        return {"ok": False, "error": "code ห้ามว่าง"}, 400
+        return jsonify(ok=True, rows=len(df))
 
-    # 3. ตรวจซ้ำ DB
-
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("SELECT code FROM products")
-    existing = {r[0] for r in cur.fetchall()}
-
-
-    duplicate = df[df["code"].isin(existing)]
-    if not duplicate.empty:
-        return {
-            "ok": False,
-            "error": f"code ซ้ำ {duplicate.iloc[0]['code']}"
-        }, 400
-
-    # เก็บข้อมูลไว้ session (ยังไม่ insert)
-    session["import_rows"] = df.to_dict("records")
-
-    return {
-        "ok": True,
-        "rows": len(df)
-    }
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)), 500
     
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
@@ -161,7 +165,7 @@ def import_commit():
 
     rows = session.get("import_rows")
     if not rows:
-        return {"ok": False, "error": "ไม่มีข้อมูลให้บันทึก"}, 400
+        return jsonify(ok=False, error="ไม่มีข้อมูลให้บันทึก"), 400
 
     conn = get_db()
     cur = conn.cursor()
