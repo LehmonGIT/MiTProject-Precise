@@ -185,69 +185,68 @@ def import_validate():
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
 def import_commit():
+    try: 
+        rows = session.get("import_rows")
+        if not rows:
+            return jsonify(ok=False, error="ไม่มีข้อมูลให้บันทึก"), 400
 
-    rows = session.get("import_rows")
-    if not rows:
-        return jsonify(ok=False, error="ไม่มีข้อมูลให้บันทึก"), 400
+        conn = get_db()
+        cur = conn.cursor()
 
-    conn = get_db()
-    cur = conn.cursor()
+        success = 0
+        failed = 0
+        errors = []
 
-    success = 0
-    failed = 0
-    errors = []
+        for i, r in enumerate(rows, start=1):
+            try:
 
-    for i, r in enumerate(rows, start=1):
-        try:
-
-            cur.execute("""
-                        INSERT INTO products (
-                            company,business,product,code,product_type,
-                            mit,mit_issue,mit_due,
-                            factsheet,iso,test,tis,tisi,
-                            productmodel,descrip,size,color
-                        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """, (
-                            r.get("company"),
-                            r.get("business"),
-                            r.get("product"),
-                            r.get("code"),
-                            r.get("product_type"),
-                            r.get("mit"),
-                            r.get("mit_issue") or None,
-                            r.get("mit_due") or None,
-                            r.get("factsheet"),
-                            r.get("iso"),
-                            r.get("test"),
-                            r.get("tis"),
-                            r.get("tisi"),
-                            r.get("productmodel"),
-                            r.get("descrip"),
-                            r.get("size"),
-                            r.get("color"),
-                        ))
-            success +=1
-        except Exception as e:
-            failed +=1
-            errors.append(f"แถว {i}: {str(e)}")
-
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    session.pop("import_rows", None)
-
-    return {
-        "ok": True,
-        "success": success,
-        "failed": failed,
-        errors : errors
-    }
+                cur.execute("""
+                            INSERT INTO products (
+                                company,business,product,code,product_type,
+                                mit,mit_issue,mit_due,
+                                factsheet,iso,test,tis,tisi,
+                                productmodel,descrip,size,color
+                            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        """, (
+                                r.get("company"),
+                                r.get("business"),
+                                r.get("product"),
+                                r.get("code"),
+                                r.get("product_type"),
+                                r.get("mit"),
+                                r.get("mit_issue") or None,
+                                r.get("mit_due") or None,
+                                r.get("factsheet"),
+                                r.get("iso"),
+                                r.get("test"),
+                                r.get("tis"),
+                                r.get("tisi"),
+                                r.get("productmodel"),
+                                r.get("descrip"),
+                                r.get("size"),
+                                r.get("color"),
+                            ))
+                success +=1
+            except Exception as e:
+                failed +=1
+                errors.append(f"แถว {i}: {str(e)}")
 
 
+        conn.commit()
+        cur.close()
+        conn.close()
 
+        session.pop("import_rows", None)
 
+        return {
+            "ok": True,
+            "success": success,
+            "failed": failed,
+            errors : errors
+        }
+    except Exception as e:
+        print("IMPORT COMMIT ERROR:", e)
+        return jsonify(ok=False, error=str(e)), 500
 
     
 @app.route("/db-test")
