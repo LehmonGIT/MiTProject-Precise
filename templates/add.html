@@ -268,7 +268,13 @@
 
         const data = await res.json()
         if (!data.ok) {
-            alert(data.error)
+            alert(data.error || "Upload failed")
+            return
+        }
+
+        if (!Array.isArray(data.files)) {
+            alert("Server response error: files not found")
+            console.error(data)
             return
         }
 

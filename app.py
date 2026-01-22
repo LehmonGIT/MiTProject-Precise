@@ -117,7 +117,10 @@ def import_prepare():
         # เก็บไฟล์ไว้ใช้ใน popup2 → /validate
         session["import_files"] = saved_files
 
-        return jsonify(ok=True)
+        return jsonify(
+        ok=True,
+        files=[f["filename"] for f in saved_files]
+        )
 
 
     except Exception as e:
