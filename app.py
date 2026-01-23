@@ -9,7 +9,7 @@ from db import get_db
 import pandas as pd
 import tempfile
 import uuid
-
+import math
 
 app = Flask(__name__)
 app.secret_key = "dev-secret"
@@ -189,7 +189,13 @@ def to_bool(v):
         return False
     return False   # default
 
-    
+def clean(v):
+    if v is None:
+        return None
+    if isinstance(v, float) and math.isnan(v):
+        return None
+    return v
+   
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
 def import_commit():
@@ -201,6 +207,8 @@ def import_commit():
             return jsonify(ok=False, error="ไม่มีข้อมูลให้บันทึก"), 400
 
         conn = get_db()
+        print("DB INFO:", conn.get_dsn_parameters())
+    
         cur = conn.cursor()
 
         success = 0
@@ -222,26 +230,28 @@ def import_commit():
                                       %s,%s,%s,%s,%s,
                                       %s,%s,%s,%s)
                         """, (
-                                r.get("company"),
-                                r.get("business"),
-                                r.get("product"),
-                                r.get("code"),
-                                r.get("product_type"),
-                                r.get("mit"),
-                                r.get("mit_issue") or None,
-                                r.get("mit_due") or None,
+                                clean(r.get("company")),
+                                clean(r.get("business")),
+                                clean(r.get("product")),
+                                clean(r.get("code")),
+                                clean(r.get("product_type")),
+                                clean(r.get("mit")),
+                                clean(r.get("mit_issue")),
+                                clean(r.get("mit_due")),
                                 to_bool(r.get("factsheet")),
                                 to_bool(r.get("iso")),
                                 to_bool(r.get("test")),
                                 to_bool(r.get("tis")),
                                 to_bool(r.get("tisi")),
-                                r.get("productmodel"),
-                                r.get("descrip"),
-                                r.get("size"),
-                                r.get("color"),
+                                clean(r.get("productmodel")),
+                                clean(r.get("descrip")),
+                                clean(r.get("size")),
+                                clean(r.get("color")),
                             ))
+                print("ROWCOUNT:", cur.rowcount)
                 success +=1
             except Exception as e:
+                print("❌ INSERT ERROR ROW", i, e)
                 failed +=1
                 errors.append(f"แถว {i}: {str(e)}")
 
@@ -252,12 +262,12 @@ def import_commit():
 
         session.pop("import_rows", None)
 
-        return {
-            "ok": True,
-            "success": success,
-            "failed": failed,
-            "errors" : errors
-        }
+        return jsonify(
+            ok=True,
+            success=success,
+            failed=failed,
+            errors=errors
+        )
     except Exception as e:
         print("IMPORT COMMIT ERROR:", e)
         return jsonify(ok=False, error=str(e)), 500
@@ -275,10 +285,6 @@ def db_test():
         return "DB CONNECT OK"
     except Exception as e:
         return str(e), 500
-
-
-
-
 
 
 @app.route("/product/<int:pid>")
