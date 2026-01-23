@@ -127,12 +127,13 @@ def import_prepare():
         print("IMPORT PREPARE ERROR:", e)
         return jsonify(ok=False, error=str(e)), 500
 
-def read_file_to_df(file):
+def read_file_to_rows(file: dict) -> list[dict]:
     if file["filename"].lower().endswith(".csv"):
-        return pd.read_csv(file["path"])
+        df = pd.read_csv(file["path"])
     else:
-        return pd.read_excel(file["path"])
+        df = pd.read_excel(file["path"])
 
+    return df.to_dict(orient="records")
 
 
 @app.route("/products/import/validate", methods=["POST"])
@@ -145,10 +146,10 @@ def import_validate():
             return jsonify(ok=False, error="ไม่พบไฟล์ใน session"), 400
 
         file = files[0]
-        df = read_file_to_df(file)
+        rows = read_file_to_rows(file)
 
         # 1. ตรวจ header
-        missing = [c for c in REQUIRED_COLS if c not in df.columns]
+        missing = REQUIRED_COLS - rows[0].keys()
         if missing:
             return jsonify(
                 ok=False,
@@ -156,7 +157,7 @@ def import_validate():
             ), 400
 
         # 2. ตรวจข้อมูลว่าง
-        if df["code"].isnull().any():
+        if rows["code"].isnull().any():
             return jsonify(ok=False, error="code ห้ามว่าง"), 400
 
         # 3. ตรวจซ้ำ DB
@@ -167,7 +168,7 @@ def import_validate():
         cur.close()
         conn.close()
 
-        dup = df[df["code"].isin(existing)]
+        dup = rows[rows["code"].isin(existing)]
         if not dup.empty:
             return jsonify(
                 ok=False,
@@ -175,18 +176,28 @@ def import_validate():
             ), 400
 
         # เก็บไว้รอ commit
-        session["import_rows"] = df.to_dict("records")
+        session["import_rows"] = rows.to_dict("records")
 
-        return jsonify(ok=True, rows=len(df))
+        return jsonify(ok=True, rows=len(rows))
 
     except Exception as e:
         return jsonify(ok=False, error=str(e)), 500
+    
+def to_bool(v):
+    if v in (True, "true", "True", "1", 1):
+        return True
+    if v in (False, "false", "False", "0", 0):
+        return False
+    return False   # default
+
     
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
 def import_commit():
     try: 
         rows = session.get("import_rows")
+        print("ROWS SAMPLE:", rows[:1] if rows else None)
+
         if not rows:
             return jsonify(ok=False, error="ไม่มีข้อมูลให้บันทึก"), 400
 
@@ -200,13 +211,17 @@ def import_commit():
         for i, r in enumerate(rows, start=1):
             try:
 
+                print("INSERT ROW", i, r)
                 cur.execute("""
                             INSERT INTO products (
                                 company,business,product,code,product_type,
                                 mit,mit_issue,mit_due,
                                 factsheet,iso,test,tis,tisi,
                                 productmodel,descrip,size,color
-                            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                            ) VALUES (%s,%s,%s,%s,%s,
+                                      %s,%s,%s,
+                                      %s,%s,%s,%s,%s,
+                                      %s,%s,%s,%s)
                         """, (
                                 r.get("company"),
                                 r.get("business"),
@@ -242,7 +257,7 @@ def import_commit():
             "ok": True,
             "success": success,
             "failed": failed,
-            errors : errors
+            "errors" : errors
         }
     except Exception as e:
         print("IMPORT COMMIT ERROR:", e)
