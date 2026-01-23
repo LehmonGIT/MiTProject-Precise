@@ -127,13 +127,12 @@ def import_prepare():
         print("IMPORT PREPARE ERROR:", e)
         return jsonify(ok=False, error=str(e)), 500
 
-def read_file_to_rows(file: dict) -> list[dict]:
+def read_file_to_df(file):
     if file["filename"].lower().endswith(".csv"):
-        df = pd.read_csv(file["path"])
+        return pd.read_csv(file["path"])
     else:
-        df = pd.read_excel(file["path"])
+        return pd.read_excel(file["path"])
 
-    return df.to_dict(orient="records")
 
 
 @app.route("/products/import/validate", methods=["POST"])
@@ -146,10 +145,10 @@ def import_validate():
             return jsonify(ok=False, error="ไม่พบไฟล์ใน session"), 400
 
         file = files[0]
-        rows = read_file_to_rows(file)
+        df = read_file_to_df(file)
 
         # 1. ตรวจ header
-        missing = REQUIRED_COLS - rows[0].keys()
+        missing = REQUIRED_COLS - set(df.columns)
         if missing:
             return jsonify(
                 ok=False,
@@ -157,7 +156,7 @@ def import_validate():
             ), 400
 
         # 2. ตรวจข้อมูลว่าง
-        if rows["code"].isnull().any():
+        if df["code"].isnull().any():
             return jsonify(ok=False, error="code ห้ามว่าง"), 400
 
         # 3. ตรวจซ้ำ DB
@@ -168,7 +167,7 @@ def import_validate():
         cur.close()
         conn.close()
 
-        dup = rows[rows["code"].isin(existing)]
+        dup = df[df["code"].isin(existing)]
         if not dup.empty:
             return jsonify(
                 ok=False,
@@ -176,9 +175,9 @@ def import_validate():
             ), 400
 
         # เก็บไว้รอ commit
-        session["import_rows"] = rows.to_dict("records")
+        session["import_rows"] = df.to_dict(orient="records")
 
-        return jsonify(ok=True, rows=len(rows))
+        return jsonify(ok=True, rows=len(df))
 
     except Exception as e:
         return jsonify(ok=False, error=str(e)), 500
