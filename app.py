@@ -175,7 +175,8 @@ def import_validate():
             ), 400
 
         # เก็บไว้รอ commit
-        session["import_rows"] = df.to_dict(orient="records")
+        # session["import_rows"] = df.to_dict(orient="records")
+        session["import_file"] = file["path"]
 
         return jsonify(ok=True, rows=len(df))
  
@@ -197,7 +198,7 @@ def to_mark(v):
 def clean(v):
     if v is None:
         return None
-    if isinstance(v, float) and math.isnan(v):
+    if pd.isna(v):
         return None
     return v
 
@@ -205,10 +206,16 @@ def clean(v):
 @login_required
 def import_commit():
     try: 
-        print("SESSION KEYS:", session.keys())
+        
+        file_path = session.get("import_file")
 
-        rows = session.get("import_rows")
-        print("ROWS SAMPLE:", rows[:1] if rows else None)
+        if not file_path:
+            return jsonify(ok=False, error="ไม่พบไฟล์สำหรับ import"), 400
+        
+        df = pd.read_csv(file_path, encoding="utf-8")
+        df.columns = df.columns.str.strip().str.lower()
+        rows = df.to_dict(orient="records")
+
 
         if not rows:
             return jsonify(ok=False, error="ไม่มีข้อมูลให้บันทึก"), 400
@@ -222,6 +229,9 @@ def import_commit():
         failed = 0
         errors = []
 
+        print("ROWS COUNT:", len(rows))
+        print("FIRST ROW:", rows[0])
+        
         for i, r in enumerate(rows, start=1):
             try:
 
@@ -267,7 +277,6 @@ def import_commit():
         cur.close()
         conn.close()
 
-        session.pop("import_rows", None)
 
         if success == 0:
             return jsonify(
