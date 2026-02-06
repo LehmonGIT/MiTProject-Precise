@@ -205,6 +205,7 @@ def clean(v):
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
 def import_commit():
+    print("SESSION AT COMMIT:", dict(session))
     try: 
         
         file_path = session.get("import_file")
