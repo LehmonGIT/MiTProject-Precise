@@ -319,9 +319,13 @@
 
         const res = await fetch("/products/import/commit", {
             method: "POST",                             
-            credentials: "same-origin"
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            }
 
         })
+      
 
         if (!res.ok) {
             const text = await res.text()
@@ -339,7 +343,7 @@
         }
 
         document.getElementById("resultText").innerText =
-            `✅ บันทึกสำเร็จ ${data.inserted} รายการ`
+            `✅ บันทึกสำเร็จ ${data.success} รายการ`
 
     
 

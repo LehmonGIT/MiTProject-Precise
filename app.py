@@ -178,16 +178,21 @@ def import_validate():
         session["import_rows"] = df.to_dict(orient="records")
 
         return jsonify(ok=True, rows=len(df))
-
+ 
     except Exception as e:
         return jsonify(ok=False, error=str(e)), 500
     
-def to_bool(v):
-    if v in (True, "true", "True", "1", 1):
-        return True
-    if v in (False, "false", "False", "0", 0):
-        return False
-    return False   # default
+def to_mark(v):
+    if v is None:
+        return "X"
+
+    if isinstance(v, str):
+        v = v.strip().lower()
+
+    if v in ("✓", "yes", "y", "true", "1", 1, True):
+        return "✓"
+
+    return "X"
 
 def clean(v):
     if v is None:
@@ -195,11 +200,13 @@ def clean(v):
     if isinstance(v, float) and math.isnan(v):
         return None
     return v
-   
+
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
 def import_commit():
     try: 
+        print("SESSION KEYS:", session.keys())
+
         rows = session.get("import_rows")
         print("ROWS SAMPLE:", rows[:1] if rows else None)
 
@@ -238,11 +245,11 @@ def import_commit():
                                 clean(r.get("mit")),
                                 clean(r.get("mit_issue")),
                                 clean(r.get("mit_due")),
-                                to_bool(r.get("factsheet")),
-                                to_bool(r.get("iso")),
-                                to_bool(r.get("test")),
-                                to_bool(r.get("tis")),
-                                to_bool(r.get("tisi")),
+                                to_mark(r.get("factsheet")),
+                                to_mark(r.get("iso")),
+                                to_mark(r.get("test")),
+                                to_mark(r.get("tis")),
+                                to_mark(r.get("tisi")),
                                 clean(r.get("productmodel")),
                                 clean(r.get("descrip")),
                                 clean(r.get("size")),
@@ -262,6 +269,13 @@ def import_commit():
 
         session.pop("import_rows", None)
 
+        if success == 0:
+            return jsonify(
+                ok=False,
+                error="บันทึกไม่สำเร็จ",
+                errors=errors
+            ), 400
+    
         return jsonify(
             ok=True,
             success=success,
