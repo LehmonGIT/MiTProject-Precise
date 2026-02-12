@@ -264,19 +264,20 @@
 
 <div class="product-header">
     <h2>{{ product.product }}</h2>
-
+    
     <div class="header-actions">
-        {% if session.role in ["editor","admin"] %}
+        {% if session.role in ["editor", "admin"] %}
         <a href="/product/{{ product.id }}/edit">
             <button class="btn-main btn-blue">Edit</button>
         </a>
         {% endif %}
-
-        {% if session.role in ["admin"] %}
-        <!-- <button class="btn-main btn-red" onclick="confirmDelete({{ product.id }})"> -->
+    
+        {% if session.get("role") == "admin" %}
+        <button class="btn-main btn-red"  onclick="event.stopPropagation(); confirmDelete({{ product.id }})">
             Delete
         </button>
         {% endif %}
+  
     </div>
 </div>
 
@@ -290,10 +291,14 @@
             จริงหรือไม่ ?
         </p>
 
-        <div class="modal-actions">
-            <button class="btn-confirm" onclick="doDelete()">ใช่, ลบ</button>
-            <button class="btn-cancel" onclick="closeDelete()">ยกเลิก</button>
-        </div>
+        <form id="deleteForm" method="post">
+            <div class="modal-actions">
+                <button type="submit" class="btn-confirm">ใช่, ลบ</button>
+                <button type="button" class="btn-cancel" onclick="closeDelete()">
+                    ยกเลิก
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -508,21 +513,20 @@
 
 
 <script>
+    
     let deleteId = null;
 
     function confirmDelete(id) {
-        deleteId = id;
-        document.getElementById("deleteModal").style.display = "flex";
-    }
+            console.log("delete id:", id);  // test ก่อน
+
+            if (confirm("ยืนยันการลบสินค้านี้ ?")) {
+                window.location.href = "/product/" + id + "/delete";
+            }
+        }
 
     function closeDelete() {
         deleteId = null;
         document.getElementById("deleteModal").style.display = "none";
-    }
-
-    function doDelete() {
-        if (!deleteId) return;
-        window.location.href = `/product/${deleteId}/delete`;
     }
 
     

@@ -133,8 +133,6 @@ def read_file_to_df(file):
     else:
         return pd.read_excel(file["path"])
 
-
-
 @app.route("/products/import/validate", methods=["POST"])
 @login_required
 @role_required(["editor", "admin"])
@@ -410,32 +408,27 @@ def add():
     return render_template("add.html")
 
 
-@app.route("/product/<int:id>/delete", methods=["POST"])
+@app.route("/product/<int:pid>/delete")
 @login_required
-@role_required(["admin"])
-def delete_product(id):
+@role_required("admin")
+def delete_product(pid):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("DELETE FROM products WHERE id=%s", (id,))
+    cur.execute("DELETE FROM products WHERE id=%s", (pid,))
     conn.commit()
     cur.close()
     conn.close()
+
+    flash("ลบข้อมูลเรียบร้อยแล้ว")
     return redirect(url_for("products"))
 
 
-# @app.route("/env-test")
-# def env_test():
-#     return {
-#         "DATABASE_URL": bool(os.environ.get("DATABASE_URL"))
-#     }
-
-    
 port = int(os.environ.get("PORT", 5000))
 
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
-        port=port,
+        port=port, 
         debug=True
     )
     # app.run(debug=True)
