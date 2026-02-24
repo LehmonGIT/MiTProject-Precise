@@ -419,9 +419,7 @@ def delete_product(pid):
     cur.close()
     conn.close()
 
-    flash("ลบข้อมูลเรียบร้อยแล้ว")
-    return redirect(url_for("products"))
-
+    return jsonify({"ok": True})
 
 port = int(os.environ.get("PORT", 5000))
 

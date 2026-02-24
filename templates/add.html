@@ -184,8 +184,10 @@
     <div class="modal-box">
         <h3>Import CSV / Excel</h3> <input type="file" id="importFiles" multiple accept=".csv,.xlsx,.xls">
         <div id="fileList" style="font-size:13px;margin:10px 0"></div> <small style="color:red">
-             • เลือกได้ไม่เกิน 2ไฟล์ <br> 
-            • ขนาดรวมไม่เกิน 10MB </small>
+            • เลือกได้ไม่เกิน 2ไฟล์ <br> 
+            • ขนาดรวมไม่เกิน 10MB
+            • นามสกุลไฟล์เฉพาะ (.csv,.xls,.xlsx)
+         </small>
         <div class="modal-actions"> <button class="btn-upload" onclick="uploadFiles()">
             Upload</button> 
             <button class="btn-cancel"onclick="closeImport()">Cancel</button>
@@ -223,6 +225,16 @@
     </div>
 </div>
 
+<div id="deleteResultModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="color:green">✔ สำเร็จ</h3>
+        <div id="deleteResultText">ลบข้อมูลเรียบร้อยแล้ว</div>
+        <div class="modal-actions">
+            <button class="btn-upload" onclick="reloadPage()">ปิด</button>
+        </div>
+    </div>
+</div>
+
 <script> 
     
     function closeCsvModal() { 
@@ -231,6 +243,7 @@
     function showMode(mode) { 
         document.getElementById("manualForm").style.display = mode === "manual" ? "block" : "none";
     }
+
 </script> 
 
 <script>
@@ -245,11 +258,20 @@
         document.getElementById("importModal").style.display = "none"
     }
 
-    document.getElementById("importFiles").addEventListener("change", e => {
-        selectedFiles = [...e.target.files]
-        document.getElementById("fileList").innerHTML =
-            selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
-    })
+    document.addEventListener("DOMContentLoaded", function () {
+
+            document.getElementById("importFiles").addEventListener("change", e => {
+                selectedFiles = [...e.target.files]
+                document.getElementById("fileList").innerHTML =
+                    selectedFiles.map(f => `📄 ${f.name}`).join("<br>")
+            })
+
+        })
+   
+    function backToImport() {
+            document.getElementById("confirmModal").style.display = "none"
+            document.getElementById("importModal").style.display = "flex"
+    }
 
     /* Popup 1 → 2 */
     async function uploadFiles() {
@@ -313,7 +335,10 @@
     
     }
     
-    
+    function closeResult() {
+            document.getElementById("resultModal").style.display = "none"
+    }
+
     async function startCommit() {
         showProcessingPopup()  
 
@@ -358,7 +383,8 @@
         function showProcessingPopup() {
             document.getElementById("confirmModal").style.display = "none"
             document.getElementById("resultModal").style.display = "flex"
-            document.getElementById("analyzeResult").innerText = "⏳ กำลังตรวจสอบและบันทึกข้อมูล..."
+            document.getElementById("resultText").innerText =
+                "⏳ กำลังตรวจสอบและบันทึกข้อมูล..."
         }
 
         function showError(msg) {
