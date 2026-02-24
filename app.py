@@ -408,7 +408,7 @@ def add():
     return render_template("add.html")
 
 
-@app.route("/product/<int:pid>/delete")
+@app.route("/product/<int:pid>/delete", methods=["POST"])
 @login_required
 @role_required("admin")
 def delete_product(pid):

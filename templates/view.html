@@ -15,7 +15,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 20px; 
     }   
 
     .header-actions {
@@ -515,15 +515,14 @@
 <script>
     
     let deleteId = null;
-
     function confirmDelete(id) {
-            console.log("delete id:", id);  // test ก่อน
+            deleteId = id;
 
-            if (confirm("ยืนยันการลบสินค้านี้ ?")) {
-                window.location.href = "/product/" + id + "/delete";
-            }
-        }
+        const form = document.getElementById("deleteForm");
+        form.action = "/product/" + id + "/delete";
 
+        document.getElementById("deleteModal").style.display = "flex";
+    }
     function closeDelete() {
         deleteId = null;
         document.getElementById("deleteModal").style.display = "none";

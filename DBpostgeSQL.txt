@@ -1,0 +1,26 @@
+DROP TABLE IF EXISTS products;
+
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    company VARCHAR(50),
+    business VARCHAR(50),
+    product VARCHAR(100),
+    code VARCHAR(100) UNIQUE,
+    product_type VARCHAR(100),
+    mit VARCHAR(50),
+    mit_issue DATE,
+    mit_due DATE,
+    factsheet VARCHAR(5),
+    iso VARCHAR(5),
+    test VARCHAR(5),
+    tis VARCHAR(5),
+    tisi VARCHAR(5),
+    productmodel VARCHAR(100),
+    descrip TEXT,
+    size TEXT,
+    color VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+คุมทั้งโค้ดก่อนรัน 

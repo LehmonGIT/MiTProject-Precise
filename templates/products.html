@@ -297,7 +297,7 @@
         <tbody id="tableBody">
             {% for p in products %}
             <tr class="clickable-row" data-href="/product/{{ p.id }}">
-                <td>{{ p.id }}</td>
+                <td>{{ loop.index0 + 1 }}</td>
                 <td>{{ p.company }}</td>
                 <td>{{ p.business }}</td>
                 <td class="text-left">{{ p.product }}</td>
