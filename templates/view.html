@@ -291,7 +291,7 @@
             จริงหรือไม่ ?
         </p>
 
-        <form id="deleteForm" method="post">
+        <form id="deleteForm" onsubmit="return submitDelete(event)">
             <div class="modal-actions">
                 <button type="submit" class="btn-confirm">ใช่, ลบ</button>
                 <button type="button" class="btn-cancel" onclick="closeDelete()">
@@ -527,7 +527,27 @@
         deleteId = null;
         document.getElementById("deleteModal").style.display = "none";
     }
+    async function submitDelete(e) {
+        e.preventDefault();  // ❗ หยุด form ไม่ให้ reload หน้า
 
+        const form = document.getElementById("deleteForm");
+        const actionUrl = form.action;
+
+        const res = await fetch(actionUrl, {
+            method: "POST",
+            credentials: "same-origin"
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+            closeDelete();
+            alert("ลบข้อมูลเรียบร้อยแล้ว");
+            window.location.href = "/products";
+        } else {
+            alert("เกิดข้อผิดพลาด");
+        }
+    }
     
     function toggleSection(id) {
         const section = document.getElementById(id);
