@@ -58,14 +58,14 @@ def products():
         
     
 REQUIRED_COLS = {
-    "company","business","product","code","product_type",
-    "mit","mit_issue","mit_due","tis","tis_issue","tis_due",
+    "company","business","FGcode","core_product","product_descrip",
+    "mit","mit_issue","mit_due", "iso","iso_issue","iso_due","tis","tis_issue","tis_due",
     "tisi","tisi_issue","tisi_due","cfp","cfp_issue","cfp_due",
     "cfo","cfo_issue","cfo_due","factsheet","factsheet_issue","factsheet_due",
     "technicaldata","tech_issue","tech_due","outline","outline_issue","outline_due",
     "typetest1","typetest1_issue","typetest1_due","typetest2","typetest2_issue","typetest2_due",
     "typetest3","typetest3_issue","typetest3_due","typetest4","typetest4_issue","typetest4_due",
-    "typetest5","typetest5_issue","typetest5_due","descrip","size","color"
+    "typetest5","typetest5_issue","typetest5_due","descrip","size","color","weight"
 }
 
 
@@ -241,8 +241,8 @@ def import_commit():
                 print("INSERT ROW", i, r)
                 cur.execute("""
                         INSERT INTO products (
-                            company,business,product,code,product_type,
-                            mit,mit_issue,mit_due,
+                            company,business,FGcode,core_product,product_descrip,
+                            mit,mit_issue,mit_due,iso,iso_issue,iso_due,
 
                             tis,tis_issue,tis_due,
                             tisi,tisi_issue,tisi_due,
@@ -262,10 +262,10 @@ def import_commit():
                             typetest4,typetest4_issue,typetest4_due,
                             typetest5,typetest5_issue,typetest5_due,
 
-                            descrip,size,color
+                            descrip,size,color,weight
                         ) VALUES (
                             %s,%s,%s,%s,%s,
-                            %s,%s,%s,
+                            %s,%s,%s,%s,%s,%s,
 
                             %s,%s,%s,
                             %s,%s,%s,
@@ -285,18 +285,22 @@ def import_commit():
                             %s,%s,%s,
                             %s,%s,%s,
 
-                            %s,%s,%s
+                            %s,%s,%s,%s
                         )
                     """, (
                         clean(r.get("company")),
                         clean(r.get("business")),
-                        clean(r.get("product")),
-                        clean(r.get("code")),
-                        clean(r.get("product_type")),
+                        clean(r.get("FGcode")),
+                        clean(r.get("core_product")),
+                        clean(r.get("product_descrip")),
 
                         clean(r.get("mit")),
                         clean(r.get("mit_issue")),
                         clean(r.get("mit_due")),
+
+                        clean(r.get("iso")),
+                        clean(r.get("iso_issue")),
+                        clean(r.get("iso_due")),
 
                         to_mark(r.get("tis")),
                         clean(r.get("tis_issue")),
@@ -348,9 +352,10 @@ def import_commit():
 
                         clean(r.get("descrip")),
                         clean(r.get("size")),
-                        clean(r.get("color")),
+                        clean(r.get("color")), 
+                        clean(r.get("weight")),
                     ))
-                print("ROWCOUNT:", cur.rowcount)
+                print("ROWCOUNT:", cur.rowcount) 
                 success +=1
             except Exception as e:
                 print("❌ INSERT ERROR ROW", i, e)
@@ -457,8 +462,8 @@ def add():
 
         cur.execute("""
             INSERT INTO products (
-                company,business,product,code,product_type,
-                mit,mit_issue,mit_due,
+                company,business,FGcode,core_product,product_descrip,
+                mit,mit_issue,mit_due,iso,iso_issue,iso_due,
 
                 tis,tis_issue,tis_due,
                 tisi,tisi_issue,tisi_due,
@@ -478,11 +483,11 @@ def add():
                 typetest4,typetest4_issue,typetest4_due,
                 typetest5,typetest5_issue,typetest5_due,
 
-                descrip,size,color
+                descrip,size,color,weight,
             )
             VALUES (
                 %s,%s,%s,%s,%s,
-                %s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
 
                 %s,%s,%s,
                 %s,%s,%s,
@@ -502,18 +507,22 @@ def add():
                 %s,%s,%s,
                 %s,%s,%s,
 
-                %s,%s,%s
+                %s,%s,%s,%s
             )
         """, (
             request.form["company"],
             request.form["business"],
-            request.form["product"],
-            request.form["code"],
-            request.form["product_type"],
+            request.form["FGcode"],
+            request.form["core_product"],     
+            request.form["product_descrip"],
 
             request.form["mit"],
             request.form["mit_issue"] or None,
             request.form["mit_due"] or None,
+
+            request.form["iso"],
+            request.form["iso_issue"] or None,
+            request.form["iso_due"] or None,
 
             request.form.get("tis"),
             request.form.get("tis_issue") or None,
@@ -566,6 +575,7 @@ def add():
             request.form.get("descrip"),
             request.form.get("size"),
             request.form.get("color"),
+            request.form.get("weight"),
         ))
         conn.commit()
         cur.close()

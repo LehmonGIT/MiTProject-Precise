@@ -321,20 +321,16 @@
                 <td>{{ product.business }}</td>
             </tr>
             <tr>
-                <td>Core Product</td>
-                <td>{{ product.product }}</td>
-            </tr>
-            <tr>
                 <td>FG Code</td>
-                <td>{{ product.code }}</td>
+                <td>{{ product.FGcode }}</td>
             </tr>
             <tr>
-                <td>ประเภทผลิตภัณฑ์</td>
-                <td>{{ product.product_type }}</td>
+                <td>Core Product</td>
+                <td>{{ product.core_product }}</td>
             </tr>
             <tr>
                 <td>รายละเอียดผลิตภัณฑ์</td>
-                <td>{{ product.descrip }}</td>
+                <td>{{ product_descrip }}</td>
             </tr>
             <tr>
                 <td>ขนาดผลิตภัณฑ์ (กว้างXยาวXสูง)</td>
@@ -343,8 +339,12 @@
             <tr>
                 <td>สีผลิตภัณฑ์</td>
                 <td>{{ product.color }}</td>
-           
-
+            <tr>
+            <tr>
+                <td>น้ำหนักผลิตภัณฑ์</td>
+                <td>{{ product.weight }}</td>
+            <tr>
+        
         </table>
 
         <!-- ปุ่มใช้งาน -->
@@ -406,7 +406,20 @@
             </tr>
         
             <tr>
-                <td class="doc-type">TIS</td>
+                <td class="doc-type">ISO</td>
+                <td>{{ product.iso }}</td>
+                <td>{{ product.iso_issue }}</td>
+                <td class="due-date" data-due="{{ product.iso_due }}">
+                    {{ product.iso_due }}
+                </td>
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="doc-type">มอก</td>
                 <td>{{ product.tis }}</td>
                 <td>{{ product.tis_issue }}</td>
                 <td class="due-date" data-due="{{ product.tis_due }}">
@@ -419,7 +432,7 @@
             </tr>
         
             <tr>
-                <td class="doc-type">TISI</td>
+                <td class="doc-type">สมอ</td>
                 <td>{{ product.tisi }}</td>
                 <td>{{ product.tisi_issue }}</td>
                 <td class="due-date" data-due="{{ product.tisi_due }}">
@@ -486,6 +499,11 @@
                 <td>{{ product.factsheet }}</td>
                 <td>{{ product.factsheet_issue }}</td>
                 <td>{{ product.factsheet_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -493,6 +511,11 @@
                 <td>{{ product.technicaldata }}</td>
                 <td>{{ product.tech_issue }}</td>
                 <td>{{ product.tech_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -500,6 +523,11 @@
                 <td>{{ product.outline }}</td>
                 <td>{{ product.outline_issue }}</td>
                 <td>{{ product.outline_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -507,6 +535,11 @@
                 <td>{{ product.typetest1 }}</td>
                 <td>{{ product.typetest1_issue }}</td>
                 <td>{{ product.typetest1_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -514,6 +547,11 @@
                 <td>{{ product.typetest2 }}</td>
                 <td>{{ product.typetest2_issue }}</td>
                 <td>{{ product.typetest2_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -521,6 +559,11 @@
                 <td>{{ product.typetest3 }}</td>
                 <td>{{ product.typetest3_issue }}</td>
                 <td>{{ product.typetest3_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -528,6 +571,11 @@
                 <td>{{ product.typetest4 }}</td>
                 <td>{{ product.typetest4_issue }}</td>
                 <td>{{ product.typetest4_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
             <tr>
@@ -535,6 +583,11 @@
                 <td>{{ product.typetest5 }}</td>
                 <td>{{ product.typetest5_issue }}</td>
                 <td>{{ product.typetest5_due }}</td>
+
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
         
         </tbody>
@@ -587,44 +640,56 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        const cells = document.querySelectorAll(".due-date");
+            const cells = document.querySelectorAll(".due-date");
 
-        cells.forEach(cell => {
-            const dueStr = cell.dataset.due;
-            if (!dueStr) return;
+            cells.forEach(cell => {
+                const dueStr = cell.dataset.due;
 
-            const dueDate = new Date(dueStr + "T00:00:00");
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+                // ✅ ถ้าไม่มีค่า / เป็น null / เป็นค่าว่าง / เป็น None → ไม่ต้องคำนวณ
+                if (!dueStr || dueStr === "None" || dueStr.trim() === "") {
+                    cell.textContent = "";   // ลบคำว่า None ออก
+                    return;
+                }
 
-            // คำนวณวันที่เหลือ
-            const remainDays = Math.ceil(
-                (dueDate - today) / (1000 * 60 * 60 * 24)
-            );
-            
-            const row = cell.closest("tr");
-            const statusDot = row.querySelector(".status-dot");
-            const statusText = row.querySelector(".status-text");
-    
+                const dueDate = new Date(dueStr + "T00:00:00");
+                if (isNaN(dueDate)) return;  // กันกรณีวันที่ format ผิด
 
-            if (remainDays <= 0) {
-                statusDot.classList.add("status-red");
-                statusText.textContent = "หมดอายุแล้ว";
-                return
-            }
-            // กำหนดสีจากจำนวนวัน
-            if (remainDays <= 60) {
-                statusDot.classList.add("status-orange");
-            } else if (remainDays <= 120) {
-                statusDot.classList.add("status-yellow");
-            } else {
-                statusDot.classList.add("status-green");
-            }
-            statusText.textContent = `เหลือ ${remainDays} วัน`;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const remainDays = Math.ceil(
+                    (dueDate - today) / (1000 * 60 * 60 * 24)
+                );
+
+                const row = cell.closest("tr");
+                const statusDot = row.querySelector(".status-dot");
+                const statusText = row.querySelector(".status-text");
+
+                if (!statusDot || !statusText) return;
+
+                // 🔴 หมดอายุ
+                if (remainDays <= 0) {
+                    statusDot.classList.add("status-red");
+                    statusText.textContent = "หมดอายุแล้ว";
+                    return;
+                }
+
+                // 🟠 ใกล้หมด
+                if (remainDays <= 60) {
+                    statusDot.classList.add("status-orange");
+                }
+                // 🟡 เตือนล่วงหน้า
+                else if (remainDays <= 120) {
+                    statusDot.classList.add("status-yellow");
+                }
+                // 🟢 ปกติ
+                else {
+                    statusDot.classList.add("status-green");
+                }
+
+                statusText.textContent = `เหลือ ${remainDays} วัน`;
+            });
         });
-    });
-
-
 
 
 </script>

@@ -264,14 +264,14 @@
                 <col style="width:50px"> <!-- ID -->
                 <col style="width:80px"> <!-- Company -->
                 <col style="width:90px"> <!-- Business -->
-                <col style="width:300px"> <!-- Core Product -->
                 <col style="width:100px"> <!-- FG Code -->
-                <col style="width:100px"> <!-- Product Type -->
+                <col style="width:200px"> <!-- Core Product -->
+                <col style="width:200px"> <!-- Product description -->
                 <col style="width:140px"> <!-- MiT -->
                 <col style="width:60px"> <!-- ISO -->
                 <col style="width:60px"> <!-- มอก -->
                 <col style="width:60px"> <!-- สมอ -->
-                <!-- <col style="width:80px"> Type test -->
+             
                 <col style="width:80px"> <!-- Factsheet -->
             </colgroup>
 
@@ -279,15 +279,14 @@
                 <tr>
                     <th onclick="sortTable(0)">ID</th>
                     <th onclick="sortTable(1)">Company</th>
-                    <th onclick="sortTable(2)">Business</th>
-                    <th onclick="sortTable(3)">Core Product</th>
+                    <th onclick="sortTable(2)">Business</th> 
                     <th onclick="sortTable(4)">FG Code</th>
-                    <th onclick="sortTable(5)">Product Type</th>
+                    <th onclick="sortTable(3)">Core Product</th>
+                    <th onclick="sortTable(5)">Product description</th>
                     <th onclick="sortTable(6)">MiT</th>
                     <th onclick="sortTable(9)">ISO</th>
                     <th onclick="sortTable(11)">มอก.</th>
                     <th onclick="sortTable(12)">สมอ.</th>
-                    <!-- <th onclick="sortTable(10)">Type test</th> -->
                     <th onclick="sortTable(8)">Factsheet</th>
                    
             
@@ -300,14 +299,13 @@
                 <td>{{ loop.index0 + 1 }}</td>
                 <td>{{ p.company }}</td>
                 <td>{{ p.business }}</td>
-                <td class="text-left">{{ p.product }}</td>
                 <td>{{ p.code }}</td>
-                <td>{{ p.product_type }}</td>
+                <td class="texb t-left">{{ p.product }}</td>
+                <td>{{ p.product_descrip }}</td>
                 <td>{{ p.mit }}</td>
                 <td>{{ p.iso }}</td>
                 <td>{{ p.tis }}</td>
                 <td>{{ p.tisi }}</td>
-                <!-- <td>{{ p.test }}</td> -->
                 <td>{{ p.factsheet }}</td>
             </tr>
             {% endfor %}
