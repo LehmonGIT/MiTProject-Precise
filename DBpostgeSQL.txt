@@ -2,25 +2,78 @@ DROP TABLE IF EXISTS products;
 
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
+
     company VARCHAR(50),
     business VARCHAR(50),
-    product VARCHAR(100),
-    code VARCHAR(100) UNIQUE,
-    product_type VARCHAR(100),
+    FGcode VARCHAR(100) UNIQUE,
+    core_product VARCHAR(100),
+    product_descrip VARCHAR(100),
+
     mit VARCHAR(50),
     mit_issue DATE,
     mit_due DATE,
+
+    iso VARCHAR(50),
+    iso_issue DATE,
+    iso_due DATE,
+    
+    tis VARCHAR(50),
+    tis_issue DATE,
+    tis_due DATE,
+
+    tisi VARCHAR(50),
+    tisi_issue DATE,
+    tisi_due DATE,
+    
+    cfp VARCHAR(5),
+    cfp_issue DATE,
+    cfp_due DATE,
+
+    cfo VARCHAR(5),
+    cfo_issue DATE,
+    cfo_due DATE,
+
     factsheet VARCHAR(5),
-    iso VARCHAR(5),
-    test VARCHAR(5),
-    tis VARCHAR(5),
-    tisi VARCHAR(5),
+    factsheet_issue DATE,
+    factsheet_due DATE,
+
+    technical VARCHAR(5),
+    tech_issue DATE,
+    tech_due DATE,
+
+    outline VARCHAR(5),
+    outline_issue DATE,
+    outline_due DATE,
+
+    typetest1 VARCHAR(5),
+    typetest1_issue DATE,
+    typetest1_due DATE,
+    
+    typetest2 VARCHAR(5),
+    typetest2_issue DATE,
+    typetest2_due DATE,
+    
+    typetest3 VARCHAR(5),
+    typetest3_issue DATE,
+    typetest3_due DATE,
+    
+    typetest4 VARCHAR(5),
+    typetest4_issue DATE,
+    typetest4_due DATE,
+    
+    typetest5 VARCHAR(5),
+    typetest5_issue DATE,
+    typetest5_due DATE,
+    
     productmodel VARCHAR(100),
-    descrip TEXT,
+    details TEXT,
     size TEXT,
     color VARCHAR(50),
+    weight VARCHAR(50),
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+);   
+คลุมแล้วรัน
 
-
-คุมทั้งโค้ดก่อนรัน 
+SELECT * FROM products;  
+ไว้เช็คตารางว่าสร้างสำเร็จไหม

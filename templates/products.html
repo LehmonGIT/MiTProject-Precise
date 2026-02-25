@@ -11,7 +11,7 @@
 
         /* zebra rows */
     tbody tr:nth-child(even) {
-        background: #ffffff;
+        background: #f9f9f9;
     }
 
     tbody tr:nth-child(odd) {
@@ -227,7 +227,7 @@
     .page-container {
     max-width: 1400px; /* ปรับได้ 1100–1400 */
     margin: 30px auto; /*  กึ่งกลางแนวนอน */
-    padding: 20 50px;
+    padding: 20px 50px;
     }
 
     .mini-status {
@@ -245,6 +245,42 @@
     .status-yellow { background: #f1c40f; }
     .status-green { background: #2ecc71; }
 
+    .table-note {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #444;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    }
+
+    .note-symbol {
+        font-weight: 600;
+        margin-right: 6px;
+    }
+
+    .note-check {
+        color: #2ecc71;
+    }
+
+    .note-cross {
+        color: #e74c3c;
+    }
+
+    .note-wait {
+        color: #f39c12;
+    }
+
+    .note-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+    }
 </style>
 
 <div class="page-container">
@@ -296,14 +332,14 @@
                     <th onclick="sortTable(0)">ID</th>
                     <th onclick="sortTable(1)">Company</th>
                     <th onclick="sortTable(2)">Business</th> 
-                    <th onclick="sortTable(4)">FG Code</th>
-                    <th onclick="sortTable(3)">Core Product</th>
+                    <th onclick="sortTable(3)">FG Code</th>
+                    <th onclick="sortTable(4)">Core Product</th>
                     <th onclick="sortTable(5)">Product description</th>
                     <th onclick="sortTable(6)">MiT</th>
-                    <th onclick="sortTable(9)">ISO</th>
-                    <th onclick="sortTable(11)">มอก.</th>
-                    <th onclick="sortTable(12)">สมอ.</th>
-                    <th onclick="sortTable(8)">Factsheet</th>
+                    <th onclick="sortTable(7)">ISO</th>
+                    <th onclick="sortTable(8)">มอก.</th>
+                    <th onclick="sortTable(9)">สมอ.</th>
+                    <th onclick="sortTable(10)">Factsheet</th>
                    
             
                 </tr>
@@ -315,8 +351,8 @@
                 <td>{{ loop.index0 + 1 }}</td>
                 <td>{{ p.company }}</td>
                 <td>{{ p.business }}</td>
-                <td>{{ p.code }}</td>
-                <td class="texb t-left">{{ p.product }}</td>
+                <td>{{ p.fgcode }}</td>
+                <td class="text-left">{{ p.core_product }}</td>
                 <td>{{ p.product_descrip }}</td>
                 <td>
                     {{ p.mit }}
@@ -348,6 +384,20 @@
         </tbody>
 
         </table>
+
+        <div class="table-note">
+            <div><span class="note-symbol note-check">✓</span> ผลิตภัณฑ์นี้มีใบรับรองแล้ว</div>
+            <div><span class="note-symbol note-cross">✗</span> ผลิตภัณฑ์นี้ไม่ได้ขอใบรับรอง</div>
+            <div><span class="note-symbol note-wait">-</span> ผลิตภัณฑ์นี้กำลังอยู่ในช่วงรอลงทะเบียนออกใบรับรอง</div>
+        
+            <div class="note-status">
+                <span class="mini-status status-red"></span> หมดอายุ
+                <span class="mini-status status-orange"></span> ใกล้หมด
+                <span class="mini-status status-yellow"></span> เตือนล่วงหน้า
+                <span class="mini-status status-green"></span> ปกติ
+            </div>
+        </div>
+
 
         <div class="show-count">
             Display
