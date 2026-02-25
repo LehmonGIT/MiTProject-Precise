@@ -229,6 +229,22 @@
     margin: 30px auto; /*  กึ่งกลางแนวนอน */
     padding: 20 50px;
     }
+
+    .mini-status {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+
+    /* สี */
+    .status-red { background: #e74c3c; }
+    .status-orange { background: #f39c12; }
+    .status-yellow { background: #f1c40f; }
+    .status-green { background: #2ecc71; }
+
 </style>
 
 <div class="page-container">
@@ -302,11 +318,31 @@
                 <td>{{ p.code }}</td>
                 <td class="texb t-left">{{ p.product }}</td>
                 <td>{{ p.product_descrip }}</td>
-                <td>{{ p.mit }}</td>
-                <td>{{ p.iso }}</td>
-                <td>{{ p.tis }}</td>
-                <td>{{ p.tisi }}</td>
-                <td>{{ p.factsheet }}</td>
+                <td>
+                    {{ p.mit }}
+                    <span class="mini-status" data-due="{{ p.mit_due or '' }}">
+                    </span>
+                </td>
+                <td>
+                    {{ p.iso }}
+                    <span class="mini-status" data-due="{{ p.iso_due or '' }}">
+                    </span>
+                </td>
+                <td>
+                    {{ p.tis }}
+                    <span class="mini-status" data-due="{{ p.tis_due or '' }}">
+                    </span>
+                </td>
+                <td>
+                    {{ p.tisi }}
+                    <span class="mini-status" data-due="{{ p.tisi_due or '' }}">
+                    </span>
+                </td>
+                <td>
+                    {{ p.factsheet }}
+                    <span class="mini-status" data-due="{{ p.factsheet_due or '' }}">
+                    </span>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -442,6 +478,46 @@
                 });
             });
         });
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+            const dots = document.querySelectorAll(".mini-status");
+
+            dots.forEach(dot => {
+
+                const dueStr = dot.dataset.due;
+
+                if (!dueStr || dueStr === "None") {
+                    dot.style.display = "none";
+                    return;
+                }
+
+                const dueDate = new Date(dueStr + "T00:00:00");
+                if (isNaN(dueDate)) return;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const remainDays = Math.ceil(
+                    (dueDate - today) / (1000 * 60 * 60 * 24)
+                );
+
+                if (remainDays <= 0) {
+                    dot.classList.add("status-red");
+                }
+                else if (remainDays <= 60) {
+                    dot.classList.add("status-orange");
+                }
+                else if (remainDays <= 120) {
+                    dot.classList.add("status-yellow");
+                }
+                else {
+                    dot.classList.add("status-green");
+                }
+            });
+
+        });
+
 
 </script>
 
