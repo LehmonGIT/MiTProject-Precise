@@ -369,7 +369,7 @@
 </div>
 
 <div id="regDocs" class="slide-section">
-    <!-- <h3>Regulation Documents</h3> -->
+    
   
 
     <table class="doc-plain">
@@ -391,49 +391,72 @@
             </tr>
         </thead>
         <tbody>
+        
             <tr>
                 <td class="doc-type">MiT</td>
                 <td>{{ product.mit }}</td>
                 <td>{{ product.mit_issue }}</td>
-                <td class="due-date"  data-due="{{ product.mit_due }}">
+                <td class="due-date" data-due="{{ product.mit_due }}">
                     {{ product.mit_due }}
                 </td>
-            
                 <td class="status-cell">
-                    <div class="status">
-                        <span class="status-dot"></span>
-                        <div class="status-text"></div>
-                    </div>
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
                 </td>
-
             </tr>
+        
             <tr>
-                <td class="doc-type">มอก.</td>
+                <td class="doc-type">TIS</td>
                 <td>{{ product.tis }}</td>
-                <!-- เพิ่มภายหลัง -->
-                <!-- <td>{{ product.TIS_issue }}</td>
-                <td>{{ product.TIS_due }}</td> -->
+                <td>{{ product.tis_issue }}</td>
+                <td class="due-date" data-due="{{ product.tis_due }}">
+                    {{ product.tis_due }}
+                </td>
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
+        
             <tr>
-                <td class="doc-type">สมอ.</td>
-                <td>{{ product.tist }}</td>
-
-                <!-- <td>{{ product.TISI_issue }}</td>
-                <td>{{ product.TISI_due }}</td> -->
+                <td class="doc-type">TISI</td>
+                <td>{{ product.tisi }}</td>
+                <td>{{ product.tisi_issue }}</td>
+                <td class="due-date" data-due="{{ product.tisi_due }}">
+                    {{ product.tisi_due }}
+                </td>
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
-            <!-- <tr>
+        
+            <tr>
                 <td class="doc-type">CFP</td>
-                <td>{{ product.CFP }}</td>
-                <td>{{ product.CFP_issue }}</td>
-                <td>{{ product.CFP_due }}</td>
+                <td>{{ product.cfp }}</td>
+                <td>{{ product.cfp_issue }}</td>
+                <td class="due-date" data-due="{{ product.cfp_due }}">
+                    {{ product.cfp_due }}
+                </td>
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
             </tr>
+        
             <tr>
                 <td class="doc-type">CFO</td>
-                <td>{{ product.CFO }}</td>
-                <td>{{ product.CFO_issue }}</td>
-                <td>{{ product.CFO_due }}</td>
-            </tr> -->
-
+                <td>{{ product.cfo }}</td>
+                <td>{{ product.cfo_issue }}</td>
+                <td class="due-date" data-due="{{ product.cfo_due }}">
+                    {{ product.cfo_due }}
+                </td>
+                <td class="status-cell">
+                    <span class="status-dot"></span>
+                    <div class="status-text"></div>
+                </td>
+            </tr>
+        
         </tbody>
     </table>
 </div>
@@ -457,55 +480,63 @@
             </tr>
         </thead>
         <tbody>
+        
             <tr>
                 <td class="doc-type">FactSheet</td>
                 <td>{{ product.factsheet }}</td>
-                <!-- <td>{{ product.factsheet_issue }}</td>
-                <td>{{ product.factsheet_due }}</td> -->
+                <td>{{ product.factsheet_issue }}</td>
+                <td>{{ product.factsheet_due }}</td>
             </tr>
-            <!-- <tr>
+        
+            <tr>
                 <td class="doc-type">Technical Data</td>
-                <td>{{ product.tech }}</td>
+                <td>{{ product.technicaldata }}</td>
                 <td>{{ product.tech_issue }}</td>
                 <td>{{ product.tech_due }}</td>
             </tr>
+        
             <tr>
                 <td class="doc-type">Outline</td>
                 <td>{{ product.outline }}</td>
                 <td>{{ product.outline_issue }}</td>
                 <td>{{ product.outline_due }}</td>
             </tr>
+        
             <tr>
-                <td class="doc-type">Type Test1</td>
-                <td>{{ product.tt1 }}</td>
-                <td>{{ product.tt1_issue }}</td>
-                <td>{{ product.tt1_due }}</td>
+                <td class="doc-type">Type Test 1</td>
+                <td>{{ product.typetest1 }}</td>
+                <td>{{ product.typetest1_issue }}</td>
+                <td>{{ product.typetest1_due }}</td>
             </tr>
+        
             <tr>
-                <td class="doc-type">Type Test2</td>
-                <td>{{ product.tt2 }}</td>
-                <td>{{ product.tt2_issue }}</td>
-                <td>{{ product.tt2_due }}</td>
+                <td class="doc-type">Type Test 2</td>
+                <td>{{ product.typetest2 }}</td>
+                <td>{{ product.typetest2_issue }}</td>
+                <td>{{ product.typetest2_due }}</td>
             </tr>
+        
             <tr>
-                <td class="doc-type">Type Test3</td>
-                <td>{{ product.tt3 }}</td>
-                <td>{{ product.tt3_issue }}</td>
-                <td>{{ product.tt3_due }}</td>
+                <td class="doc-type">Type Test 3</td>
+                <td>{{ product.typetest3 }}</td>
+                <td>{{ product.typetest3_issue }}</td>
+                <td>{{ product.typetest3_due }}</td>
             </tr>
+        
             <tr>
-                <td class="doc-type">Type Test4</td>
-                <td>{{ product.tt4 }}</td>
-                <td>{{ product.tt4_issue }}</td>
-                <td>{{ product.tt4_due }}</td>
+                <td class="doc-type">Type Test 4</td>
+                <td>{{ product.typetest4 }}</td>
+                <td>{{ product.typetest4_issue }}</td>
+                <td>{{ product.typetest4_due }}</td>
             </tr>
+        
             <tr>
-                <td class="doc-type">Type Test5</td>
-                <td>{{ product.tt5 }}</td>
-                <td>{{ product.tt5_issue }}</td>
-                <td>{{ product.tt5_due }}</td>
-            </tr> -->
-            
+                <td class="doc-type">Type Test 5</td>
+                <td>{{ product.typetest5 }}</td>
+                <td>{{ product.typetest5_issue }}</td>
+                <td>{{ product.typetest5_due }}</td>
+            </tr>
+        
         </tbody>
     </table>
 </div>

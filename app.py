@@ -59,9 +59,13 @@ def products():
     
 REQUIRED_COLS = {
     "company","business","product","code","product_type",
-    "mit","mit_issue","mit_due",
-    "factsheet","iso","test","tis","tisi",
-    "productmodel","descrip","size","color"
+    "mit","mit_issue","mit_due","tis","tis_issue","tis_due",
+    "tisi","tisi_issue","tisi_due","cfp","cfp_issue","cfp_due",
+    "cfo","cfo_issue","cfo_due","factsheet","factsheet_issue","factsheet_due",
+    "technicaldata","tech_issue","tech_due","outline","outline_issue","outline_due",
+    "typetest1","typetest1_issue","typetest1_due","typetest2","typetest2_issue","typetest2_due",
+    "typetest3","typetest3_issue","typetest3_due","typetest4","typetest4_issue","typetest4_due",
+    "typetest5","typetest5_issue","typetest5_due","descrip","size","color"
 }
 
 
@@ -236,34 +240,116 @@ def import_commit():
 
                 print("INSERT ROW", i, r)
                 cur.execute("""
-                            INSERT INTO products (
-                                company,business,product,code,product_type,
-                                mit,mit_issue,mit_due,
-                                factsheet,iso,test,tis,tisi,
-                                productmodel,descrip,size,color
-                            ) VALUES (%s,%s,%s,%s,%s,
-                                      %s,%s,%s,
-                                      %s,%s,%s,%s,%s,
-                                      %s,%s,%s,%s)
-                        """, (
-                                clean(r.get("company")),
-                                clean(r.get("business")),
-                                clean(r.get("product")),
-                                clean(r.get("code")),
-                                clean(r.get("product_type")),
-                                clean(r.get("mit")),
-                                clean(r.get("mit_issue")),
-                                clean(r.get("mit_due")),
-                                to_mark(r.get("factsheet")),
-                                to_mark(r.get("iso")),
-                                to_mark(r.get("test")),
-                                to_mark(r.get("tis")),
-                                to_mark(r.get("tisi")),
-                                clean(r.get("productmodel")),
-                                clean(r.get("descrip")),
-                                clean(r.get("size")),
-                                clean(r.get("color")),
-                            ))
+                        INSERT INTO products (
+                            company,business,product,code,product_type,
+                            mit,mit_issue,mit_due,
+
+                            tis,tis_issue,tis_due,
+                            tisi,tisi_issue,tisi_due,
+
+                            cfp,cfp_issue,cfp_due,
+                            cfo,cfo_issue,cfo_due,
+
+                            factsheet,factsheet_issue,factsheet_due,
+
+                            technicaldata,tech_issue,tech_due,
+
+                            outline,outline_issue,outline_due,
+
+                            typetest1,typetest1_issue,typetest1_due,
+                            typetest2,typetest2_issue,typetest2_due,
+                            typetest3,typetest3_issue,typetest3_due,
+                            typetest4,typetest4_issue,typetest4_due,
+                            typetest5,typetest5_issue,typetest5_due,
+
+                            descrip,size,color
+                        ) VALUES (
+                            %s,%s,%s,%s,%s,
+                            %s,%s,%s,
+
+                            %s,%s,%s,
+                            %s,%s,%s,
+
+                            %s,%s,%s,
+                            %s,%s,%s,
+
+                            %s,%s,%s,
+
+                            %s,%s,%s,
+
+                            %s,%s,%s,
+
+                            %s,%s,%s,
+                            %s,%s,%s,
+                            %s,%s,%s,
+                            %s,%s,%s,
+                            %s,%s,%s,
+
+                            %s,%s,%s
+                        )
+                    """, (
+                        clean(r.get("company")),
+                        clean(r.get("business")),
+                        clean(r.get("product")),
+                        clean(r.get("code")),
+                        clean(r.get("product_type")),
+
+                        clean(r.get("mit")),
+                        clean(r.get("mit_issue")),
+                        clean(r.get("mit_due")),
+
+                        to_mark(r.get("tis")),
+                        clean(r.get("tis_issue")),
+                        clean(r.get("tis_due")),
+
+                        to_mark(r.get("tisi")),
+                        clean(r.get("tisi_issue")),
+                        clean(r.get("tisi_due")),
+
+                        to_mark(r.get("cfp")),
+                        clean(r.get("cfp_issue")),
+                        clean(r.get("cfp_due")),
+
+                        to_mark(r.get("cfo")),
+                        clean(r.get("cfo_issue")),
+                        clean(r.get("cfo_due")),
+
+                        to_mark(r.get("factsheet")),
+                        clean(r.get("factsheet_issue")),
+                        clean(r.get("factsheet_due")),
+
+                        to_mark(r.get("technicaldata")),
+                        clean(r.get("tech_issue")),
+                        clean(r.get("tech_due")),
+
+                        to_mark(r.get("outline")),
+                        clean(r.get("outline_issue")),
+                        clean(r.get("outline_due")),
+
+                        to_mark(r.get("typetest1")),
+                        clean(r.get("typetest1_issue")),
+                        clean(r.get("typetest1_due")),
+
+                        to_mark(r.get("typetest2")),
+                        clean(r.get("typetest2_issue")),
+                        clean(r.get("typetest2_due")),
+
+                        to_mark(r.get("typetest3")),
+                        clean(r.get("typetest3_issue")),
+                        clean(r.get("typetest3_due")),
+
+                        to_mark(r.get("typetest4")),
+                        clean(r.get("typetest4_issue")),
+                        clean(r.get("typetest4_due")),
+
+                        to_mark(r.get("typetest5")),
+                        clean(r.get("typetest5_issue")),
+                        clean(r.get("typetest5_due")),
+
+                        clean(r.get("descrip")),
+                        clean(r.get("size")),
+                        clean(r.get("color")),
+                    ))
                 print("ROWCOUNT:", cur.rowcount)
                 success +=1
             except Exception as e:
@@ -370,35 +456,117 @@ def add():
         cur = conn.cursor()
 
         cur.execute("""
-            INSERT INTO products
-            (company,business,product,code,product_type,
-             mit,mit_issue,mit_due,
-             factsheet,iso,test,tis,tisi,
-             productmodel,descrip,size,color)
-            VALUES (%s,%s,%s,%s,%s,
-                    %s,%s,%s,
-                    %s,%s,%s,%s,%s,
-                    %s,%s,%s,%s)
+            INSERT INTO products (
+                company,business,product,code,product_type,
+                mit,mit_issue,mit_due,
+
+                tis,tis_issue,tis_due,
+                tisi,tisi_issue,tisi_due,
+
+                cfp,cfp_issue,cfp_due,
+                cfo,cfo_issue,cfo_due,
+
+                factsheet,factsheet_issue,factsheet_due,
+
+                technicaldata,tech_issue,tech_due,
+
+                outline,outline_issue,outline_due,
+
+                typetest1,typetest1_issue,typetest1_due,
+                typetest2,typetest2_issue,typetest2_due,
+                typetest3,typetest3_issue,typetest3_due,
+                typetest4,typetest4_issue,typetest4_due,
+                typetest5,typetest5_issue,typetest5_due,
+
+                descrip,size,color
+            )
+            VALUES (
+                %s,%s,%s,%s,%s,
+                %s,%s,%s,
+
+                %s,%s,%s,
+                %s,%s,%s,
+
+                %s,%s,%s,
+                %s,%s,%s,
+
+                %s,%s,%s,
+
+                %s,%s,%s,
+
+                %s,%s,%s,
+
+                %s,%s,%s,
+                %s,%s,%s,
+                %s,%s,%s,
+                %s,%s,%s,
+                %s,%s,%s,
+
+                %s,%s,%s
+            )
         """, (
             request.form["company"],
             request.form["business"],
             request.form["product"],
             request.form["code"],
             request.form["product_type"],
+
             request.form["mit"],
             request.form["mit_issue"] or None,
             request.form["mit_due"] or None,
-            request.form["factsheet"],
-            request.form["iso"],
-            request.form["test"],
-            request.form["tis"],
-            request.form["tisi"],
-            request.form["productmodel"],
-            request.form["descrip"],
-            request.form["size"],
-            request.form["color"]
-        ))
 
+            request.form.get("tis"),
+            request.form.get("tis_issue") or None,
+            request.form.get("tis_due") or None,
+
+            request.form.get("tisi"),
+            request.form.get("tisi_issue") or None,
+            request.form.get("tisi_due") or None,
+
+            request.form.get("cfp"),
+            request.form.get("cfp_issue") or None,
+            request.form.get("cfp_due") or None,
+
+            request.form.get("cfo"),
+            request.form.get("cfo_issue") or None,
+            request.form.get("cfo_due") or None,
+
+            request.form.get("factsheet"),
+            request.form.get("factsheet_issue") or None,
+            request.form.get("factsheet_due") or None,
+
+            request.form.get("technicaldata"),
+            request.form.get("tech_issue") or None,
+            request.form.get("tech_due") or None,
+
+            request.form.get("outline"),
+            request.form.get("outline_issue") or None,
+            request.form.get("outline_due") or None,
+
+            request.form.get("typetest1"),
+            request.form.get("typetest1_issue") or None,
+            request.form.get("typetest1_due") or None,
+
+            request.form.get("typetest2"),
+            request.form.get("typetest2_issue") or None,
+            request.form.get("typetest2_due") or None,
+
+            request.form.get("typetest3"),
+            request.form.get("typetest3_issue") or None,
+            request.form.get("typetest3_due") or None,
+
+            request.form.get("typetest4"),
+            request.form.get("typetest4_issue") or None,
+            request.form.get("typetest4_due") or None,
+
+            request.form.get("typetest5"),
+            request.form.get("typetest5_issue") or None,
+            request.form.get("typetest5_due") or None,
+
+            request.form.get("descrip"),
+            request.form.get("size"),
+            request.form.get("color"),
+        ))
         conn.commit()
         cur.close()
         conn.close()
