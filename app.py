@@ -158,22 +158,22 @@ def import_validate():
             ), 400
 
         # 2. ตรวจข้อมูลว่าง
-        if df["code"].isnull().any():
-            return jsonify(ok=False, error="code ห้ามว่าง"), 400
+        if df["fgcode"].isnull().any():
+            return jsonify(ok=False, error="fgcode ห้ามว่าง"), 400
 
         # 3. ตรวจซ้ำ DB
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT code FROM products")
+        cur.execute("SELECT fgcode FROM products")
         existing = {r[0] for r in cur.fetchall()}
         cur.close()
         conn.close()
 
-        dup = df[df["code"].isin(existing)]
+        dup = df[df["fgcode"].isin(existing)]
         if not dup.empty:
             return jsonify(
                 ok=False,
-                error=f"code ซ้ำ {dup.iloc[0]['code']}"
+                error=f"fgcode ซ้ำ {dup.iloc[0]['fgcode']}"
             ), 400
 
         # เก็บไว้รอ commit
