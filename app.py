@@ -10,6 +10,7 @@ import pandas as pd
 import tempfile
 import uuid
 import math
+import traceback
 
 app = Flask(__name__)
 app.secret_key = "dev-secret"
@@ -215,7 +216,8 @@ def import_commit():
         if not file_path:
             return jsonify(ok=False, error="ไม่พบไฟล์สำหรับ import"), 400
         
-        df = pd.read_csv(file_path, encoding="utf-8")
+        df = pd.read_csv(file_path, encoding="utf-8-sig")
+       
         df.columns = df.columns.str.strip().str.lower()
         rows = df.to_dict(orient="records")
 
@@ -298,7 +300,7 @@ def import_commit():
                         clean(r.get("mit_issue")),
                         clean(r.get("mit_due")),
 
-                        clean(r.get("iso")),
+                        to_mark(r.get("iso")),
                         clean(r.get("iso_issue")),
                         clean(r.get("iso_due")),
 
@@ -356,10 +358,10 @@ def import_commit():
                         clean(r.get("weight")),
                     ))
                 print("ROWCOUNT:", cur.rowcount) 
-                success +=1
+                success += 1
             except Exception as e:
-                print("❌ INSERT ERROR ROW", i, e)
-                failed +=1
+                print("❌ INSERT ERROR ROW", i, traceback.format_exc())  # ← full stack trace
+                failed += 1
                 errors.append(f"แถว {i}: {str(e)}")
 
 
@@ -369,22 +371,15 @@ def import_commit():
 
 
         if success == 0:
-            return jsonify(
-                ok=False,
-                error="บันทึกไม่สำเร็จ",
-                errors=errors
-            ), 400
-    
-        return jsonify(
-            ok=True,
-            success=success,
-            failed=failed,
-            errors=errors
-        )
-    except Exception as e:
-        print("IMPORT COMMIT ERROR:", e)
-        return jsonify(ok=False, error=str(e)), 500
+            return jsonify(ok=False, error="บันทึกไม่สำเร็จ", errors=errors), 400
 
+        return jsonify(ok=True, success=success, failed=failed, errors=errors)
+
+    except Exception as e:  # ← try-except ชั้นนอกสุด อันเดียว
+             print("IMPORT COMMIT ERROR:", traceback.format_exc())
+    return jsonify(ok=False, error=str(e)), 500
+    
+   
     
 @app.route("/db-test")
 def db_test():
@@ -460,7 +455,7 @@ def add():
         conn = get_db()
         cur = conn.cursor()
 
-        cur.execute("""
+        cur.execute(""" 
             INSERT INTO products (
                 company,business,fgcode,core_product,product_descrip,
                 mit,mit_issue,mit_due,iso,iso_issue,iso_due,
