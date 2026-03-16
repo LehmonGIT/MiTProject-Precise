@@ -471,37 +471,120 @@ def view(pid):
     return render_template("view.html", product=product)
 
 
-@app.route("/product/<int:pid>/edit", methods=["GET","POST"])
+@app.route("/product/<int:pid>/edit", methods=["GET", "POST"])
 @login_required
-@role_required(["editor","admin"])
+@role_required(["editor", "admin"])
 def edit(pid):
+    conn = get_db()
+    cur = conn.cursor()
 
-    return "Edit page not implemented yet", 501
-    # print("CURRENT ROLE:", session.get("role"))
+    # ดึงข้อมูลสินค้าเดิม
+    cur.execute("SELECT * FROM products WHERE id=%s", (pid,))
+    row = cur.fetchone()
 
-    # product = next(p for p in PRODUCTS if p["id"] == pid)
+    if not row:
+        cur.close()
+        conn.close()
+        return "Product not found", 404
 
-    # if request.method == "POST":
-    #     product["company"] = request.form["company"]
-    #     product["business"] = request.form["business"]
-    #     product["product"] = request.form["product"]
-    #     product["code"] = request.form["code"]
-    #     product["type"] = request.form["type"]
-    #     product["descrip"] = request.form["descrip"]
-    #     product["size"] = request.form["size"]
-    #     product["color"] = request.form["color"]
-    #     product["mit"] = request.form["mit"]
-    #     product["expdate"] = request.form["expdate"]
-    #     product["factsheet"] = request.form["factsheet"]
-    #     product["ISO"] = request.form["ISO"]
-    #     product["test"] = request.form["test"]
-    #     product["TIS"] = request.form["TIS"]
-    #     product["TISI"] = request.form["TISI"]
-    #     product["productmodel"] = request.form["productmodel"]
+    colnames = [desc[0] for desc in cur.description]
+    product = dict(zip(colnames, row))
 
-    #     return redirect(url_for("view", pid=pid))
-    # return render_template("edit.html", product=product)
+    # ── GET: แสดงฟอร์ม ────────────────────────────────
+    if request.method == "GET":
+        cur.close()
+        conn.close()
+        return render_template("edit.html", product=product)
 
+    # ── POST: บันทึกข้อมูล ────────────────────────────
+    try:
+        # รับค่าจากฟอร์ม
+        company        = request.form.get("company", "").strip()
+        business       = request.form.get("business", "").strip()
+        fgcode         = request.form.get("fgcode", "").strip()
+        core_product   = request.form.get("core_product", "").strip()
+        product_descrip= request.form.get("product_descrip", "").strip() or None
+        size           = request.form.get("size", "").strip() or None
+        color          = request.form.get("color", "").strip() or None
+        weight         = request.form.get("weight", "").strip() or None
+
+        # validate required
+        if not all([company, business, fgcode, core_product]):
+            flash("กรุณากรอกข้อมูลที่จำเป็นให้ครบ", "error")
+            cur.close()
+            conn.close()
+            return render_template("edit.html", product=product)
+
+        # ── จัดการรูปภาพ ──────────────────────────────
+        image_url = product.get("image_url")  # ค่าเดิม
+
+        remove_image = request.form.get("remove_image", "0")
+        if remove_image == "1":
+            # ต้องการลบรูป
+            image_url = None
+
+        image_file = request.files.get("image")
+        if image_file and image_file.filename:
+            # มีไฟล์รูปใหม่ส่งมา — save ลง static/uploads/
+            import uuid, os
+            from werkzeug.utils import secure_filename
+
+            ALLOWED = {"jpg", "jpeg", "png", "webp", "gif"}
+            ext = image_file.filename.rsplit(".", 1)[-1].lower()
+
+            if ext not in ALLOWED:
+                flash("ไฟล์รูปภาพไม่รองรับ (ใช้ jpg, png, webp เท่านั้น)", "error")
+                cur.close()
+                conn.close()
+                return render_template("edit.html", product=product)
+
+            # สร้างชื่อไฟล์ unique
+            filename  = f"{uuid.uuid4().hex}.{ext}"
+            upload_dir = os.path.join(app.static_folder, "uploads")
+            os.makedirs(upload_dir, exist_ok=True)
+            image_file.save(os.path.join(upload_dir, filename))
+            image_url = f"/static/uploads/{filename}"
+
+        # ── UPDATE database ───────────────────────────
+        cur.execute("""
+            UPDATE products
+            SET
+                company         = %s,
+                business        = %s,
+                fgcode          = %s,
+                core_product    = %s,
+                product_descrip = %s,
+                size            = %s,
+                color           = %s,
+                weight          = %s,
+                image_url       = %s
+            WHERE id = %s
+        """, (
+            company,
+            business,
+            fgcode,
+            core_product,
+            product_descrip,
+            size,
+            color,
+            weight,
+            image_url,
+            pid,
+        ))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash("บันทึกข้อมูลเรียบร้อยแล้ว", "success")
+        return redirect(url_for("view", pid=pid))
+
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        flash(f"เกิดข้อผิดพลาด: {str(e)}", "error")
+        return render_template("edit.html", product=product)
 
 @app.route("/product/add", methods=["GET","POST"])
 @login_required

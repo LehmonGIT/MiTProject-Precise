@@ -26,9 +26,10 @@
         padding: 0;
     }
 
+    /* ไม่ set background: ที่ body
+   ปล่อยให้ layout.html จัดการพื้นหลังฟ้าอ่อนเอง */
     body {
         font-family: 'Sarabun', system-ui, sans-serif;
-        background: var(--white);
         color: var(--text);
     }
 
@@ -47,8 +48,9 @@
     .card {
         background: var(--white);
         border-radius: 14px;
-        border: 1.5px solid var(--grey-bd);
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        /* ไม่มี border แข็ง — ใช้ shadow แทนให้ลอยบนพื้นฟ้าอ่อน */
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
         overflow: hidden;
     }
 
@@ -303,29 +305,29 @@
         transform: scale(1.6);
     }
 
-    /* dot colours + soft glow ring */
+    /* สีซิงค์ตรงกับ status-badge ใน product_detail.html */
     .s-green {
-        background: #27ae60;
-        box-shadow: 0 0 0 3px #c8f0d8;
+        background: #51b74b;
+        box-shadow: 0 0 0 3px #d5f5d3;
     }
 
     .s-yellow {
-        background: #d4a000;
-        box-shadow: 0 0 0 3px #fff0b3;
+        background: #e6b800;
+        box-shadow: 0 0 0 3px #fff9c4;
     }
 
     .s-orange {
-        background: #e07010;
-        box-shadow: 0 0 0 3px #ffe0b2;
+        background: #fa6d09;
+        box-shadow: 0 0 0 3px #ffe8d0;
     }
 
     .s-red {
-        background: #d93025;
-        box-shadow: 0 0 0 3px #fdd;
+        background: #e74c3c;
+        box-shadow: 0 0 0 3px #fde8e8;
     }
 
     .s-grey {
-        background: #c5cdd6;
+        background: #b0bec5;
         box-shadow: 0 0 0 3px #eceff1;
     }
 
@@ -568,8 +570,8 @@
                 </div>
             </div>
             <div class="toolbar-right">
-                <button class="btn btn-excel" onclick="exportExcel()">📊 Export Excel</button>
-                <button class="btn btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+                <button class="btn btn-excel" onclick="exportExcel()"> Export Excel</button>
+                <button class="btn btn-pdf" onclick="exportPDF()"> Export PDF</button>
                 {% if session.role in ["editor","admin"] %}
                 <a class="btn btn-add" href="{{ url_for('add') }}">＋ Add Product</a>
                 {% endif %}
@@ -665,26 +667,26 @@
         <!-- FOOTER -->
         <div class="table-footer">
 
-            <!-- legend อธิบายความหมายสี -->
+            <!-- legend อธิบายความหมายสี — ซิงค์ตรงกับ product_detail.html -->
             <div class="legend">
                 <div class="leg-item">
-                    <span class="leg-dot" style="background:#27ae60;box-shadow:0 0 0 3px #c8f0d8"></span>
+                    <span class="leg-dot" style="background:#51b74b;box-shadow:0 0 0 3px #d5f5d3"></span>
                     ปกติ (&gt;120 วัน)
                 </div>
                 <div class="leg-item">
-                    <span class="leg-dot" style="background:#d4a000;box-shadow:0 0 0 3px #fff0b3"></span>
+                    <span class="leg-dot" style="background:#e6b800;box-shadow:0 0 0 3px #fff9c4"></span>
                     เตือน (61–120 วัน)
                 </div>
                 <div class="leg-item">
-                    <span class="leg-dot" style="background:#e07010;box-shadow:0 0 0 3px #ffe0b2"></span>
+                    <span class="leg-dot" style="background:#fa6d09;box-shadow:0 0 0 3px #ffe8d0"></span>
                     ใกล้หมด (≤60 วัน)
                 </div>
                 <div class="leg-item">
-                    <span class="leg-dot" style="background:#d93025;box-shadow:0 0 0 3px #fdd"></span>
+                    <span class="leg-dot" style="background:#e74c3c;box-shadow:0 0 0 3px #fde8e8"></span>
                     หมดอายุแล้ว
                 </div>
                 <div class="leg-item">
-                    <span class="leg-dot" style="background:#c5cdd6;box-shadow:0 0 0 3px #eceff1"></span>
+                    <span class="leg-dot" style="background:#b0bec5;box-shadow:0 0 0 3px #eceff1"></span>
                     ไม่มีข้อมูล
                 </div>
             </div>

@@ -2,187 +2,620 @@
 {% block content %}
 
 <style>
-    .edit-card {
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+    /* ─────────────────────────────────────────
+   TOKENS — ซิงค์กับหน้าอื่นทั้งหมด
+───────────────────────────────────────── */
+    :root {
+        --blue: #1a9dd7;
+        --blue-dk: #0f7fae;
+        --blue-lt: #e8f6fd;
+        --c4: #51b74b;
+        /* เขียว — บันทึก */
+        --c1: #eb7f22;
+        /* ส้ม   — ยกเลิก */
+        --red: #e74c3c;
+        --bd: #e2e8f0;
+        --bg: #f7f9fc;
+        --text: #1e2d3d;
+        --muted: #7a8fa6;
+        --white: #ffffff;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Sarabun', system-ui, sans-serif;
+        color: var(--text);
+    }
+
+    /* ─────────────────────────────────────────
+   PAGE WRAPPER
+───────────────────────────────────────── */
+    .edit-wrap {
+        max-width: 900px;
+        margin: 24px auto;
+        padding: 0 24px 60px;
+    }
+
+    /* ─────────────────────────────────────────
+   BREADCRUMB
+───────────────────────────────────────── */
+    .bc {
         display: flex;
-        gap: 25px;
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 14px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-        margin-top: 22px;
-        border-left: 5px solid #51b74b;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
     }
 
-    .edit-img {
-        width: 300px;
-        height: 300px;
-        object-fit: cover;
-        border-radius: 12px;
-        background: #f0f0f0;
-        border: 1px solid #ddd;
+    .bc a {
+        color: var(--blue);
+        text-decoration: none;
+        font-weight: 500;
     }
 
-    .edit-form {
-        flex: 1;
+    .bc a:hover {
+        text-decoration: underline;
     }
 
-    .edit-form table {
-        width: 100%;
-        border-collapse: collapse;
+    .bc-sep {
+        color: #ccc;
     }
 
-    .edit-form td {
-        padding: 7px 10px;
-        font-size: 14px;
+    /* ─────────────────────────────────────────
+   PAGE HEADER
+───────────────────────────────────────── */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
     }
 
-    .edit-form td:first-child {
-        font-weight: bold;
-        color: #1a9dd7;
-        width: 180px;
+    .page-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--blue);
+        padding-left: 12px;
+        border-left: 4px solid var(--blue);
+        border-radius: 0;
+        margin: 0;
     }
 
-    input[type="text"],
-    input[type="date"],
-    textarea {
-        width: 100%;
-        padding: 6px 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 14px;
-    }
-
-    textarea {
-        height: 80px;
-    }
-
-    .btn-area {
-        margin-top: 20px;
+    .header-btns {
         display: flex;
         gap: 10px;
     }
 
-    .btn-main {
-        padding: 8px 16px;
-        border-radius: 6px;
+    /* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 20px;
         border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Sarabun', sans-serif;
+        cursor: pointer;
+        transition: filter .15s, transform .1s;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    .btn-save {
+        background: var(--c4);
+        color: var(--white);
+    }
+
+    .btn-cancel {
+        background: var(--c1);
+        color: var(--white);
+    }
+
+    .btn-upload {
+        background: var(--blue);
+        color: var(--white);
+        font-size: 12px;
+        padding: 7px 16px;
+    }
+
+    .btn-remove {
+        background: var(--bd);
+        color: var(--text);
+        font-size: 12px;
+        padding: 7px 16px;
+    }
+
+    /* ─────────────────────────────────────────
+   CARD
+───────────────────────────────────────── */
+    .card {
+        background: var(--white);
+        border-radius: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .10);
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+
+    /* card header stripe */
+    .card-head {
+        padding: 13px 22px;
+        background: var(--blue-lt);
+        border-bottom: 1.5px solid var(--bd);
+    }
+
+    .card-head h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--blue-dk);
+        margin: 0;
+    }
+
+    /* ─────────────────────────────────────────
+   IMAGE UPLOAD ZONE
+───────────────────────────────────────── */
+    .img-zone {
+        display: flex;
+        align-items: flex-start;
+        gap: 22px;
+        padding: 20px 22px;
+    }
+
+    .img-preview {
+        width: 150px;
+        height: 150px;
+        border-radius: 10px;
+        border: 2px dashed var(--bd);
+        background: var(--bg);
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .img-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* placeholder เมื่อไม่มีรูป */
+    .img-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .img-placeholder .pl-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: var(--bd);
+    }
+
+    .img-right {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .img-hint {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-top: 4px;
+    }
+
+    /* ─────────────────────────────────────────
+   FORM SECTIONS
+───────────────────────────────────────── */
+    .form-section-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--muted);
+        padding: 16px 22px 0;
+    }
+
+    /* 2-column grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 0 22px 4px;
+    }
+
+    .form-full {
+        grid-column: 1 / -1;
+    }
+
+    /* ─────────────────────────────────────────
+   FIELD
+───────────────────────────────────────── */
+    .field {
+        padding: 12px 10px 12px 0;
+        border-bottom: 1px solid var(--bd);
+    }
+
+    /* even col — เพิ่ม padding ซ้าย */
+    .form-grid .field:nth-child(even):not(.form-full) {
+        padding-left: 18px;
+        padding-right: 0;
+    }
+
+    .field:last-child {
+        border-bottom: none;
+    }
+
+    .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--blue);
+        margin-bottom: 5px;
+    }
+
+    .req {
+        color: var(--red);
+        margin-left: 2px;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+        width: 100%;
+        height: 38px;
+        padding: 0 12px;
+        border: 1.5px solid var(--bd);
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: 'Sarabun', sans-serif;
+        color: var(--text);
+        background: var(--white);
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .field textarea {
+        height: 80px;
+        padding: 10px 12px;
+        resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(26, 157, 215, .12);
+    }
+
+    /* ─────────────────────────────────────────
+   FORM ACTIONS (footer of card)
+───────────────────────────────────────── */
+    .form-actions {
+        padding: 16px 22px;
+        border-top: 1.5px solid var(--bd);
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg);
+    }
+
+    /* ─────────────────────────────────────────
+   FLASH / SUCCESS MESSAGE
+───────────────────────────────────────── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-box {
+        background: var(--white);
+        padding: 28px 32px;
+        border-radius: 14px;
+        text-align: center;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, .2);
+        min-width: 280px;
+    }
+
+    .modal-box h3 {
+        color: var(--c4);
+        margin: 0 0 18px;
+    }
+
+    .modal-box button {
+        background: var(--blue);
+        color: var(--white);
+        border: none;
+        padding: 8px 24px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
-        color: white;
+        font-weight: 600;
+        font-family: 'Sarabun', sans-serif;
     }
 
-    .btn-green {
-        background: #51b74b;
-    }
+    /* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+    @media (max-width: 600px) {
+        .edit-wrap {
+            padding: 0 12px 40px;
+        }
 
-    .btn-red {
-        background: #eb7f22;
-    }
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
 
-    h2 {
-        color: #1a9dd7;
+        .form-grid .field:nth-child(even):not(.form-full) {
+            padding-left: 0;
+        }
+
+        .img-zone {
+            flex-direction: column;
+        }
     }
 </style>
 
-<h2>Editing: {{ product.product }}</h2>
+<!-- ============================================================
+     PAGE
+============================================================ -->
+<div class="edit-wrap">
 
-<form method="post" enctype="multipart/form-data">
-    <div class="edit-card">
+    <!-- BREADCRUMB -->
+    <div class="bc">
+        <a href="{{ url_for('products') }}">Product List</a>
+        <span class="bc-sep">›</span>
+        <a href="/product/{{ product.id }}">{{ product.product }}</a>
+        <span class="bc-sep">›</span>
+        <span>Edit</span>
+    </div>
 
-        <!-- รูป -->
-        <div>
-            <img src="{{ product.image_url or '/static/no-image.png' }}" class="edit-img">
-            <br><br>
-            <label>เปลี่ยนรูปภาพ:</label>
-            <input type="file" name="image">
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">แก้ไขข้อมูลผลิตภัณฑ์</h2>
+        <div class="header-btns">
+            <a href="/product/{{ product.id }}" class="btn btn-cancel">ยกเลิก</a>
+            <button class="btn btn-save" onclick="document.getElementById('editForm').requestSubmit()">บันทึก</button>
+        </div>
+    </div>
+
+    <form id="editForm" method="POST" action="/product/{{ product.id }}/edit" enctype="multipart/form-data">
+
+        <!-- ════════════════════════════════
+             CARD: รูปภาพ
+        ════════════════════════════════ -->
+        <div class="card">
+            <div class="card-head">
+                <h3>รูปภาพผลิตภัณฑ์</h3>
+            </div>
+            <div class="img-zone">
+
+                <!-- preview -->
+                <div class="img-preview" id="imgPreview">
+                    {% if product.image_url %}
+                    <img id="previewImg" src="{{ product.image_url }}" alt="product image">
+                    {% else %}
+                    <div class="img-placeholder" id="imgPlaceholder">
+                        <div class="pl-icon"></div>
+                        <span>ยังไม่มีรูปภาพ</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="img-right">
+                    <!-- hidden file input -->
+                    <input type="file" id="imageFile" name="image" accept="image/*" style="display:none"
+                        onchange="previewImage(event)">
+
+                    <button type="button" class="btn btn-upload" onclick="document.getElementById('imageFile').click()">
+                        เลือกรูปภาพ
+                    </button>
+                    <button type="button" class="btn btn-remove" onclick="removeImage()">
+                        ลบรูปภาพ
+                    </button>
+                    <!-- hidden flag ส่งบอก backend ว่าต้องการลบรูป -->
+                    <input type="hidden" id="removeImageFlag" name="remove_image" value="0">
+
+                    <div class="img-hint">
+                        รองรับ JPG, PNG, WEBP<br>
+                        แนะนำ 800 × 800 px ขึ้นไป<br>
+                        ขนาดไม่เกิน 5 MB
+                    </div>
+                </div>
+
+            </div>
         </div>
 
+        <!-- ════════════════════════════════
+             CARD: ข้อมูลพื้นฐาน
+        ════════════════════════════════ -->
+        <div class="card">
+            <div class="card-head">
+                <h3>ข้อมูลพื้นฐาน</h3>
+            </div>
 
-        <!-- ฟอร์มแก้ไข -->
-        <div class="edit-form">
-           
-            <table>
-        
-                <tr>
-                    <td>Company</td>
-                    <td><input type="text" name="company" value="{{ product.company }}"></td>
-                </tr>
-                <tr>
-                    <td>Business</td>
-                    <td><input type="text" name="business" value="{{ product.business }}"></td>
-                </tr>
-                <tr>
-                    <td>Core Product</td>
-                    <td><input type="text" name="product" value="{{ product.product }}"></td>
-                </tr>
-                <tr>
-                    <td>FG Code</td>
-                    <td><input type="text" name="code" value="{{ product.code }}"></td>
-                </tr>
-                <tr>
-                    <td>Product Type</td>
+            <!-- ── กลุ่ม: บริษัท ── -->
+            <div class="form-section-label">ข้อมูลบริษัท</div>
+            <div class="form-grid">
 
-                    <td><input type="text" name="product_type" value="{{ product.product_type }}"></td>
+                <div class="field">
+                    <label for="company">Company <span class="req">*</span></label>
+                    <input type="text" id="company" name="company" value="{{ product.company }}" required
+                        placeholder="ชื่อบริษัท">
+                </div>
 
-                </tr>
-                <tr>
-                    <td>Description</td>
-                    <td><textarea name="descrip">{{ product.descrip }}</textarea></td>
-                </tr>
-                <tr>
-                    <td>Production Size</td>
-                    <td><input type="text" name="size" value="{{ product.size }}"></td>
-                </tr>
-                <tr>
-                    <td>Production Color</td>
-                    <td><input type="text" name="color" value="{{ product.color }}"></td>
-                </tr>
-                <tr>
-                    <td>MiT</td>
-                    <td><input type="text" name="mit" value="{{ product.mit }}"></td>
-                </tr>
-                <tr>
-                    <td>วันหมดอายุ</td>
-                    <td><input type="date" name="expdate" value="{{ product.expdate }}"></td>
-                </tr>
-                <tr>
-                    <td>Factsheet URL</td>
-                    <td><input type="text" name="factsheet" value="{{ product.factsheet }}"></td>
-                </tr>
-                <tr>
-                    <td>ISO</td>
-                    <td><input type="text" name="iso" value="{{ product.iso }}"></td>
-                </tr>
-                <tr>
-                    <td>Routine Test</td>
-                    <td><input type="text" name="test" value="{{ product.test }}"></td>
-                </tr>
-                <tr>
-                    <td>มอก.</td>
-                    <td><input type="text" name="tis" value="{{ product.tis }}"></td>
-                </tr>
-                <tr>
-                    <td>สมอ.</td>
-                    <td><input type="text" name="tisi" value="{{ product.tisi }}"></td>
-                </tr>
-                <tr>
-                    <td>Production Model</td>
-                    <td><input type="text" name="productmodel" value="{{ product.productmodel }}"></td>
-                </tr>
+                <div class="field">
+                    <label for="business">Business <span class="req">*</span></label>
+                    <input type="text" id="business" name="business" value="{{ product.business }}" required
+                        placeholder="รหัสธุรกิจ">
+                </div>
 
-            </table>
+            </div>
 
-            <div class="btn-area">
-                <button class="btn-main btn-green" type="submit">Save</button>
+            <!-- ── กลุ่ม: สินค้า ── -->
+            <div class="form-section-label">ข้อมูลสินค้า</div>
+            <div class="form-grid">
 
-                <a href="/product/{{ product.id }}">
-                    <button type="button" class="btn-main btn-red">Cancel</button>
-                </a>
+                <div class="field">
+                    <label for="fgcode">FG Code <span class="req">*</span></label>
+                    <input type="text" id="fgcode" name="fgcode" value="{{ product.fgcode }}" required
+                        placeholder="รหัส FG">
+                </div>
+
+                <div class="field">
+                    <label for="core_product">Core Product <span class="req">*</span></label>
+                    <input type="text" id="core_product" name="core_product" value="{{ product.core_product }}" required
+                        placeholder="ชื่อสินค้าหลัก">
+                </div>
+
+                <div class="field form-full">
+                    <label for="product_descrip">รายละเอียดผลิตภัณฑ์</label>
+                    <textarea id="product_descrip" name="product_descrip"
+                        placeholder="อธิบายผลิตภัณฑ์...">{{ product.product_descrip or '' }}</textarea>
+                </div>
+
+            </div>
+
+            <!-- ── กลุ่ม: จำเพาะ ── -->
+            <div class="form-section-label">ข้อมูลจำเพาะ</div>
+            <div class="form-grid">
+
+                <div class="field form-full">
+                    <label for="size">ขนาดผลิตภัณฑ์ (กว้าง × ยาว × สูง)</label>
+                    <input type="text" id="size" name="size" value="{{ product.size }}"
+                        placeholder="เช่น กว้าง 100 mm x ยาว 200 mm x สูง 50 mm">
+                </div>
+
+                <div class="field">
+                    <label for="color">สีผลิตภัณฑ์</label>
+                    <input type="text" id="color" name="color" value="{{ product.color }}" placeholder="สี">
+                </div>
+
+                <div class="field">
+                    <label for="weight">น้ำหนักผลิตภัณฑ์</label>
+                    <input type="text" id="weight" name="weight" value="{{ product.weight }}" placeholder="เช่น 5 kg">
+                </div>
+
+            </div>
+
+            <!-- form actions -->
+            <div class="form-actions">
+                <a href="/product/{{ product.id }}" class="btn btn-cancel">ยกเลิก</a>
+                <button type="submit" class="btn btn-save">บันทึกการเปลี่ยนแปลง</button>
             </div>
 
         </div>
 
+    </form>
+</div>
+
+<!-- ============================================================
+     FLASH MESSAGES
+============================================================ -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="modal-overlay" id="flashModal">
+    <div class="modal-box">
+        {% for cat, msg in messages %}
+        <h3>{{ msg }}</h3>
+        {% endfor %}
+        <button onclick="document.getElementById('flashModal').remove()">OK</button>
     </div>
-</form>
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+    /* ─────────────────────────────────────────
+       PREVIEW IMAGE เมื่อเลือกไฟล์ใหม่
+    ───────────────────────────────────────── */
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const preview = document.getElementById("imgPreview");
+            // ล้าง placeholder แล้วใส่รูปจริง
+            preview.innerHTML = `<img id="previewImg" src="${e.target.result}"
+            alt="preview" style="width:100%;height:100%;object-fit:cover;">`;
+            // reset flag ลบรูป
+            document.getElementById("removeImageFlag").value = "0";
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /* ─────────────────────────────────────────
+       REMOVE IMAGE — set flag + แสดง placeholder
+    ───────────────────────────────────────── */
+    function removeImage() {
+        const preview = document.getElementById("imgPreview");
+        preview.innerHTML = `
+        <div class="img-placeholder" id="imgPlaceholder">
+            <div class="pl-icon"></div>
+            <span>ยังไม่มีรูปภาพ</span>
+        </div>`;
+        // clear file input
+        document.getElementById("imageFile").value = "";
+        // บอก backend ให้ลบรูปเดิม
+        document.getElementById("removeImageFlag").value = "1";
+    }
+
+    /* ─────────────────────────────────────────
+       VALIDATE ก่อน submit
+    ───────────────────────────────────────── */
+    document.getElementById("editForm").addEventListener("submit", function (e) {
+        const required = this.querySelectorAll("[required]");
+        let valid = true;
+        required.forEach(input => {
+            if (!input.value.trim()) {
+                input.style.borderColor = "#e74c3c";
+                input.style.boxShadow = "0 0 0 3px rgba(231,76,60,.12)";
+                valid = false;
+            } else {
+                input.style.borderColor = "";
+                input.style.boxShadow = "";
+            }
+        });
+        if (!valid) e.preventDefault();
+    });
+</script>
 
 {% endblock %}
