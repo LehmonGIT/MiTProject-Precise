@@ -1,562 +1,887 @@
 {% extends "layout.html" %}
 {% block content %}
 
-
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
-    body {
-    font-family: 'Sarabun', system-ui, sans-serif;
-    }
-    
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 
-        /* zebra rows */
-    tbody tr:nth-child(even) {
-        background: #f9f9f9;
-    }
-
-    tbody tr:nth-child(odd) {
-        background: #ffffff;
-    }
-
-    /* header shadow */
-    thead th {
-        box-shadow: inset 0 -1px 0 rgba(255,255,255,0.25);
-    }
-
-    #productTable th,
-    #productTable td {
-        text-align: center;        /* กึ่งกลางแนวนอน */
-        vertical-align: middle;    /* กึ่งกลางแนวตั้ง */
-    }
-    #productTable td.text-left {
-    text-align: left !important;
-    }
-
+    /* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
     :root {
-        --c1: #eb7f22;
-        --c2: #e48e41;
-        --c3: #1a9dd7;
-        --c4: #51b74b;
-        --c5: #f0f9f5;
-        --c8: #b5dfed;
+        --blue: #1a9dd7;
+        --blue-dk: #0f7fae;
+        --blue-lt: #e8f6fd;
+        --green: #51b74b;
+        --orange: #eb7f22;
+        --grey-bd: #e2e8f0;
+        --grey-bg: #f7f9fc;
+        --text: #1e2d3d;
+        --muted: #7a8fa6;
+        --white: #ffffff;
     }
 
-    .clickable-row {
-        cursor: default;
-        transition: background 0.15s ease;
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
 
-    .clickable-row:hover {
-        background: var(--c8);
+    body {
+        font-family: 'Sarabun', system-ui, sans-serif;
+        background: var(--white);
+        color: var(--text);
     }
- 
 
-    table {
-        table-layout: fixed;
-        width: 100%;
-        border-radius: 8px;
+    /* ─────────────────────────────────────────
+   PAGE
+───────────────────────────────────────── */
+    .page-wrap {
+        max-width: 1480px;
+        margin: 24px auto;
+        padding: 0 24px 60px;
+    }
+
+    /* ─────────────────────────────────────────
+   CARD
+───────────────────────────────────────── */
+    .card {
+        background: var(--white);
+        border-radius: 14px;
+        border: 1.5px solid var(--grey-bd);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
         overflow: hidden;
     }
 
-    /* table */
-    .table-container {
-        background: var(--c5);
-        padding: 10px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-        max-width: 100%;
-        overflow-x: auto;
-    }
-
-    /* Header */
-    th {
-        background: var(--c3);
-        color: white;
-        padding: 6px 8px;
-        position: sticky;
-        top: 0;
-        cursor: pointer;
-        font-size: 14px;
-        white-space: nowrap;
-    }
-
-    th,
-    td {
-        
-        word-wrap: break-word;
-        white-space: normal;
-    }
-
-    /* Rows */
-    td {
-        padding: 5px 8px;
-        border-bottom: 1px solid #e6e6e6;
-        font-size: 13px;
-    }
-
-    tr:hover {
-        background: var(--c8);
-    }
-
-    /* Filter */
-    select.filter {
-        width: 100%;
-        padding: 2px 4px;
-        margin-top: 2px;
-        border-radius: 4px;
-        font-size: 12px;
-        height: 26px;
-        box-sizing: border-box;
-    }
-
-    /* Search Box */
-    .search-box {
-        width: 200px;
-        height: 30px;
-        font-size: 13px;
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-    }
-
-    .pagination {
-        margin-top: 8px;
+    /* ─────────────────────────────────────────
+   TOOLBAR
+───────────────────────────────────────── */
+    .toolbar {
         display: flex;
-        justify-content: flex-end;   /* ⭐ ชิดขวา */
         align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 18px 24px 16px;
+        border-bottom: 1.5px solid var(--grey-bd);
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--blue);
+        padding-left: 12px;
+        border-left: 4px solid var(--blue);
+    }
+
+    .search-wrap {
+        position: relative;
+    }
+
+    .search-wrap svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--muted);
+    }
+
+    #searchInput {
+        height: 34px;
+        width: 200px;
+        padding: 0 12px 0 32px;
+        border: 1.5px solid var(--grey-bd);
+        border-radius: 20px;
         font-size: 13px;
-        gap: 4px;                   
-    }
-    /* Pagination buttons */
-    .pagination button {
-        padding: 6px 12px;
-        margin: 0 3px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 13px;
-        background: var(--c3);
-        color: white;
-        transition: 0.2s;
+        font-family: 'Sarabun', sans-serif;
+        outline: none;
+        background: var(--grey-bg);
+        transition: border-color .2s, box-shadow .2s;
     }
 
-    /* hover */
-    .pagination button:hover {
-        background: #0f8ec3;
+    #searchInput:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(26, 157, 215, .12);
+        background: var(--white);
     }
 
-    /* active page */
-    .pagination button.active {
-        background: var(--c1);
-    }
-
-    /* disabled */
-    .pagination button:disabled {
-        background: #cccccc;
-        cursor: not-allowed;
-    }
-
-
-    /* ADD button */
-    .btn-add {
-        background: var(--c4);
-        border: none;
-        padding: 8px 16px;
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .btn-add:hover {
-        background: #3e9c3d;
+    .toolbar-right {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 15px;
         border: none;
-        padding: 8px 16px;
-        color: white;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 14px;
-        transition: 0.2s;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Sarabun', sans-serif;
+        color: var(--white);
+        transition: filter .15s, transform .1s;
+        white-space: nowrap;
+        text-decoration: none;
     }
 
-    /* Excel button */
+    .btn:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
     .btn-excel {
-        background: var(--c3);
+        background: var(--blue);
     }
 
-    .btn-excel:hover {
-        background: #0f8ec3;
-    }
-
-    /* PDF button */
     .btn-pdf {
-        background: var(--c1);
+        background: var(--orange);
     }
 
-    .btn-pdf:hover {
-        background: #cf6f1c;
+    .btn-add {
+        background: var(--green);
     }
 
-    .show-count {
-    margin-top: 10px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    justify-content: flex-start;   /* ⭐ ซ้ายล่าง */
+    /* ─────────────────────────────────────────
+   TABLE
+───────────────────────────────────────── */
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .btn-back {
-    background: var(--c2);
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
+    #productTable {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 13.5px;
     }
 
-    .btn-back:hover {
-        background: #c57832;
-    }
-    
-    .page-container {
-    max-width: 1400px; /* ปรับได้ 1100–1400 */
-    margin: 30px auto; /*  กึ่งกลางแนวนอน */
-    padding: 20px 50px;
+    /* column widths
+   doc columns แคบลงได้มาก เพราะมีแค่ dot เดียว */
+    #productTable col.c-id {
+        width: 50px;
     }
 
-    .mini-status {
+    #productTable col.c-co {
+        width: 85px;
+    }
+
+    #productTable col.c-biz {
+        width: 95px;
+    }
+
+    #productTable col.c-fg {
+        width: 155px;
+    }
+
+    #productTable col.c-core {
+        width: 190px;
+    }
+
+    #productTable col.c-desc {
+        width: 210px;
+    }
+
+    #productTable col.c-doc {
+        width: 72px;
+    }
+
+    /* ← แคบ เพราะมีแค่ dot */
+
+    /* header */
+    #productTable thead th {
+        background: var(--blue);
+        color: var(--white);
+        padding: 11px 10px;
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        border-right: 1px solid rgba(255, 255, 255, .15);
+    }
+
+    #productTable thead th:last-child {
+        border-right: none;
+    }
+
+    #productTable thead th:hover {
+        background: var(--blue-dk);
+    }
+
+    .sort-arrow {
+        opacity: .4;
+        font-size: 10px;
+        margin-left: 3px;
+    }
+
+    #productTable thead th:hover .sort-arrow {
+        opacity: .8;
+    }
+
+    /* body */
+    #productTable tbody td {
+        padding: 10px 10px;
+        text-align: center;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--grey-bd);
+        word-break: break-word;
+        white-space: normal;
+        line-height: 1.45;
+    }
+
+    #productTable tbody td.td-l {
+        text-align: left;
+    }
+
+    /* zebra */
+    #productTable tbody tr:nth-child(even) {
+        background: #fafcfe;
+    }
+
+    #productTable tbody tr:nth-child(odd) {
+        background: var(--white);
+    }
+
+    .clickable-row {
+        cursor: pointer;
+        transition: background .1s;
+    }
+
+    .clickable-row:hover {
+        background: var(--blue-lt) !important;
+    }
+
+    #productTable tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* FG code */
+    .fg-tag {
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--blue-lt);
+        color: var(--blue-dk);
+        padding: 2px 7px;
+        border-radius: 4px;
+        white-space: nowrap;
         display: inline-block;
-        width: 8px;
-        height: 8px;
+    }
+
+    /* ─────────────────────────────────────────
+   STATUS DOT — แสดงแค่สีล้วน ไม่มีเลขที่
+   ขนาด 13px กลม เห็นชัด
+   hover → scale ขึ้น + แสดง tooltip
+───────────────────────────────────────── */
+    .sdot {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
         border-radius: 50%;
-        margin-left: 6px;
+        cursor: default;
+        transition: transform .15s;
+        position: relative;
         vertical-align: middle;
     }
 
-    /* สี */
-    .status-red { background: #e74c3c; }
-    .status-orange { background: #f39c12; }
-    .status-yellow { background: #f1c40f; }
-    .status-green { background: #2ecc71; }
-
-    .table-note {
-    margin-top: 14px;
-    padding: 12px 16px;
-    background: #ffffff;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #444;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    align-items: center;
+    .sdot:hover {
+        transform: scale(1.6);
     }
 
-    .note-symbol {
+    /* dot colours + soft glow ring */
+    .s-green {
+        background: #27ae60;
+        box-shadow: 0 0 0 3px #c8f0d8;
+    }
+
+    .s-yellow {
+        background: #d4a000;
+        box-shadow: 0 0 0 3px #fff0b3;
+    }
+
+    .s-orange {
+        background: #e07010;
+        box-shadow: 0 0 0 3px #ffe0b2;
+    }
+
+    .s-red {
+        background: #d93025;
+        box-shadow: 0 0 0 3px #fdd;
+    }
+
+    .s-grey {
+        background: #c5cdd6;
+        box-shadow: 0 0 0 3px #eceff1;
+    }
+
+    /* ─────────────────────────────────────────
+   TOOLTIP — hover บน dot เพื่อดูรายละเอียด
+   ใช้ CSS pseudo-element อ่านจาก data-tip
+───────────────────────────────────────── */
+    [data-tip] {
+        position: relative;
+    }
+
+    [data-tip]::after {
+        content: attr(data-tip);
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e2d3d;
+        color: #fff;
+        font-size: 12px;
+        font-family: 'Sarabun', sans-serif;
+        padding: 6px 11px;
+        border-radius: 7px;
+        white-space: pre;
+        /* รองรับ \n */
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .15s .05s;
+        z-index: 200;
+        min-width: 130px;
+        text-align: left;
+        line-height: 1.65;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, .22);
+    }
+
+    /* ลูกศรชี้ลง */
+    [data-tip]::before {
+        content: "";
+        position: absolute;
+        bottom: calc(100% + 2px);
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #1e2d3d;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .15s .05s;
+        z-index: 200;
+    }
+
+    [data-tip]:hover::after,
+    [data-tip]:hover::before {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* ─────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────── */
+    .table-footer {
+        padding: 13px 24px;
+        border-top: 1.5px solid var(--grey-bd);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    /* legend */
+    .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-size: 12.5px;
+        color: var(--muted);
+        align-items: center;
+    }
+
+    .leg-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .leg-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .show-count {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    #rowsPerPage {
+        height: 30px;
+        padding: 0 6px;
+        border: 1.5px solid var(--grey-bd);
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: 'Sarabun', sans-serif;
+        outline: none;
+        cursor: pointer;
+    }
+
+    #rowsPerPage:focus {
+        border-color: var(--blue);
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .pg-btn {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border: 1.5px solid var(--grey-bd);
+        border-radius: 7px;
+        background: var(--white);
+        color: var(--text);
+        font-size: 13px;
+        font-family: 'Sarabun', sans-serif;
+        cursor: pointer;
         font-weight: 600;
-        margin-right: 6px;
+        transition: all .15s;
     }
 
-    .note-check {
-        color: #2ecc71;
+    .pg-btn:hover:not(:disabled):not(.pg-on) {
+        background: var(--blue-lt);
+        border-color: var(--blue);
+        color: var(--blue);
     }
 
-    .note-cross {
-        color: #e74c3c;
+    .pg-btn.pg-on {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: var(--white);
     }
 
-    .note-wait {
-        color: #f39c12;
+    .pg-btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
     }
 
+    .pg-ell {
+        font-size: 13px;
+        color: var(--muted);
+        padding: 0 4px;
+        line-height: 32px;
+    }
 
+    /* flash modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-box {
+        background: var(--white);
+        padding: 28px 32px;
+        border-radius: 14px;
+        text-align: center;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, .2);
+        min-width: 280px;
+    }
+
+    .modal-box h3 {
+        color: var(--green);
+        margin-bottom: 16px;
+    }
+
+    .modal-box button {
+        background: var(--blue);
+        color: var(--white);
+        border: none;
+        padding: 8px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 680px) {
+        .page-wrap {
+            padding: 0 12px 40px;
+        }
+
+        #searchInput {
+            width: 150px;
+        }
+
+        .table-footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
 </style>
 
-<div class="page-container">
+<!-- ══════════════════════════════════════════
+     PAGE
+══════════════════════════════════════════ -->
+<div class="page-wrap">
+    <div class="card">
 
-    <div class="table-container">
-
-        <!-- Header -->
-        
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="color:var(--c3)">Product List</h2>
-            
-                <input id="searchInput" onkeyup="globalSearch()" placeholder="Search..."
-                style="padding:8px; margin-left:50px; border:2px solid var(--c4); border-radius:10px;">
-                
-            <div>
-                <button class="btn btn-excel" onclick="exportExcel()">Export Excel</button>
-                <button class="btn btn-pdf" onclick="exportPDF()">Export PDF</button>
-
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                <h2 class="page-title">Product List</h2>
+                <div class="search-wrap">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round">
+                        <circle cx="8.5" cy="8.5" r="5.5" />
+                        <line x1="13.5" y1="13.5" x2="18" y2="18" />
+                    </svg>
+                    <input id="searchInput" placeholder="Search..." onkeyup="globalSearch()">
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+                <button class="btn btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
                 {% if session.role in ["editor","admin"] %}
-                <a href="{{ url_for('add') }}">
-                    <button class="btn-add">Add Product</button>
-                </a>
-
-
+                <a class="btn btn-add" href="{{ url_for('add') }}">＋ Add Product</a>
                 {% endif %}
-                
             </div>
         </div>
 
-        <!-- Table -->
-        <table id="productTable">
-            <colgroup>
-                <col style="width:50px"> <!-- ID -->
-                <col style="width:80px"> <!-- Company -->
-                <col style="width:90px"> <!-- Business -->
-                <col style="width:150px"> <!-- FG Code -->
-                <col style="width:200px"> <!-- Core Product -->
-                <col style="width:200px"> <!-- Product description -->
-                <col style="width:140px"> <!-- MiT -->
-                <col style="width:60px"> <!-- ISO -->
-                <col style="width:60px"> <!-- มอก -->
-                <col style="width:60px"> <!-- สมอ -->
-                <col style="width:80px"> <!-- Factsheet -->
-            </colgroup>
+        <!-- TABLE -->
+        <div class="table-scroll">
+            <table id="productTable">
+                <colgroup>
+                    <col class="c-id">
+                    <col class="c-co">
+                    <col class="c-biz">
+                    <col class="c-fg">
+                    <col class="c-core">
+                    <col class="c-desc">
+                    <col class="c-doc"><!-- MiT -->
+                    <col class="c-doc"><!-- ISO -->
+                    <col class="c-doc"><!-- มอก -->
+                    <col class="c-doc"><!-- สมอ -->
+                    <col class="c-doc"><!-- Factsheet -->
+                </colgroup>
 
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">ID</th>
-                    <th onclick="sortTable(1)">Company</th>
-                    <th onclick="sortTable(2)">Business</th> 
-                    <th onclick="sortTable(3)">FG Code</th>
-                    <th onclick="sortTable(4)">Core Product</th>
-                    <th onclick="sortTable(5)">Product description</th>
-                    <th onclick="sortTable(6)">MiT</th>
-                    <th onclick="sortTable(7)">ISO</th>
-                    <th onclick="sortTable(8)">มอก.</th>
-                    <th onclick="sortTable(9)">สมอ.</th>
-                    <th onclick="sortTable(10)">Factsheet</th>
-                   
-            
-                </tr>
-            </thead>
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">ID <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(1)">Company <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(2)">Business <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(3)">FG Code <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(4)">Core Product <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(5)">Product Description <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(6)">MiT <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(7)">ISO <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(8)">มอก. <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(9)">สมอ. <span class="sort-arrow">⇅</span></th>
+                        <th onclick="sortTable(10)">Factsheet <span class="sort-arrow">⇅</span></th>
+                    </tr>
+                </thead>
 
-        <tbody id="tableBody">
-            {% for p in products %}
-            <tr class="clickable-row" data-href="/product/{{ p.id }}">
-                <td>{{ loop.index0 + 1 }}</td>
-                <td>{{ p.company }}</td>
-                <td>{{ p.business }}</td>
-                <td>{{ p.fgcode }}</td>
-                <td class="text-left">{{ p.core_product }}</td>
-                <td>{{ p.product_descrip }}</td>
-                <td>
-                    {{ p.mit }}
-                    <span class="mini-status" data-due="{{ p.mit_due or '' }}">
-                    </span>
-                </td>
-                <td>
-                    {{ p.iso }}
-                    <span class="mini-status" data-due="{{ p.iso_due or '' }}">
-                    </span>
-                </td>
-                <td>
-                    {{ p.tis }}
-                    <span class="mini-status" data-due="{{ p.tis_due or '' }}">
-                    </span>
-                </td>
-                <td>
-                    {{ p.tisi }}
-                    <span class="mini-status" data-due="{{ p.tisi_due or '' }}">
-                    </span>
-                </td>
-                <td>
-                    {{ p.factsheet }}
-                    <span class="mini-status" data-due="{{ p.factsheet_due or '' }}">
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+                <tbody id="tableBody">
+                    {% for p in products %}
+                    <tr class="clickable-row" data-href="/product/{{ p.id }}">
 
-        </table>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ p.company }}</td>
+                        <td>{{ p.business }}</td>
+                        <td><span class="fg-tag">{{ p.fgcode }}</span></td>
+                        <td class="td-l">{{ p.core_product }}</td>
+                        <td class="td-l">{{ p.product_descrip }}</td>
 
-        <div class="table-note">
-            <div><span class="note-symbol note-check">✓</span> ผลิตภัณฑ์นี้มีใบรับรองแล้ว</div>
-            <div><span class="note-symbol note-cross">✗</span> ผลิตภัณฑ์นี้ไม่ได้ขอใบรับรอง</div>
-            <div><span class="note-symbol note-wait">-</span> ผลิตภัณฑ์นี้กำลังอยู่ในช่วงรอลงทะเบียนออกใบรับรอง</div>
-        
+                        <!-- ── DOC COLUMNS ──────────────────────────────
+                 แสดงแค่ dot สีล้วน ไม่มีเลขที่
+                 data-due  → JS คำนวณสี
+                 data-label / data-num / data-due → JS สร้าง tooltip
+            ─────────────────────────────────────────────── -->
+
+                        <td>
+                            <span class="sdot" data-due="{{ p.mit_due or '' }}" data-label="MiT"
+                                data-num="{{ p.mit or '—' }}">
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="sdot" data-due="{{ p.iso_due or '' }}" data-label="ISO"
+                                data-num="{{ p.iso or '—' }}">
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="sdot" data-due="{{ p.tis_due or '' }}" data-label="มอก"
+                                data-num="{{ p.tis or '—' }}">
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="sdot" data-due="{{ p.tisi_due or '' }}" data-label="สมอ"
+                                data-num="{{ p.tisi or '—' }}">
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="sdot" data-due="{{ p.factsheet_due or '' }}" data-label="Factsheet"
+                                data-num="{{ p.factsheet or '—' }}">
+                            </span>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div><!-- /.table-scroll -->
+
+        <!-- FOOTER -->
+        <div class="table-footer">
+
+            <!-- legend อธิบายความหมายสี -->
+            <div class="legend">
+                <div class="leg-item">
+                    <span class="leg-dot" style="background:#27ae60;box-shadow:0 0 0 3px #c8f0d8"></span>
+                    ปกติ (&gt;120 วัน)
+                </div>
+                <div class="leg-item">
+                    <span class="leg-dot" style="background:#d4a000;box-shadow:0 0 0 3px #fff0b3"></span>
+                    เตือน (61–120 วัน)
+                </div>
+                <div class="leg-item">
+                    <span class="leg-dot" style="background:#e07010;box-shadow:0 0 0 3px #ffe0b2"></span>
+                    ใกล้หมด (≤60 วัน)
+                </div>
+                <div class="leg-item">
+                    <span class="leg-dot" style="background:#d93025;box-shadow:0 0 0 3px #fdd"></span>
+                    หมดอายุแล้ว
+                </div>
+                <div class="leg-item">
+                    <span class="leg-dot" style="background:#c5cdd6;box-shadow:0 0 0 3px #eceff1"></span>
+                    ไม่มีข้อมูล
+                </div>
+            </div>
+
+            <!-- display + pagination -->
+            <div class="footer-right">
+                <div class="show-count">
+                    แสดง
+                    <select id="rowsPerPage" onchange="changePageSize()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    รายการ
+                </div>
+                <div class="pagination" id="paginationNumbers"></div>
+            </div>
+
         </div>
 
-
-        <div class="show-count">
-            Display
-            <select id="rowsPerPage" onchange="changePageSize()">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-            Items
-        </div>
-        
-        <div class="pagination">
-            <div id="paginationNumbers"></div>
-        </div>
-
-
-    </div>
-
-</div>
+    </div><!-- /.card -->
+</div><!-- /.page-wrap -->
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
-<div class="modal-overlay">
+<div class="modal-overlay" id="flashModal">
     <div class="modal-box">
-        {% for cat, msg in messages %}
-        <h3>{{ msg }}</h3>
-        {% endfor %}
-        <button onclick="this.parentElement.parentElement.remove()">OK</button>
+        {% for cat, msg in messages %}<h3>{{ msg }}</h3>{% endfor %}
+        <button onclick="document.getElementById('flashModal').remove()">OK</button>
     </div>
 </div>
 {% endif %}
 {% endwith %}
 
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
 <script>
+    /* ─────────────────────────────────────────
+       STATUS DOTS
+       คำนวณสีจาก due date แล้ว inject tooltip
+    ───────────────────────────────────────── */
+    function initDots() {
+        document.querySelectorAll(".sdot").forEach(dot => {
+            const due = dot.dataset.due || "";
+            const label = dot.dataset.label || "";
+            const num = dot.dataset.num || "—";
 
-    function globalSearch() {
-        let input = document.getElementById("searchInput").value.toLowerCase();
-        let rows = document.querySelectorAll("#tableBody tr");
-        rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(input) ? "" : "none");
-    }
+            let remain = null, dueFmt = "ไม่มีข้อมูล";
 
-    let sortDir = true;
-    function sortTable(n) {
-        let table = document.getElementById("productTable");
-        let switching = true;
-
-        while (switching) {
-            switching = false;
-            let rows = table.rows;
-
-            for (let i = 2; i < rows.length - 1; i++) {
-                let shouldSwitch = false;
-                let x = rows[i].getElementsByTagName("td")[n];
-                let y = rows[i + 1].getElementsByTagName("td")[n];
-
-                if (sortDir ? (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase())
-                    : (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase())) {
-                    shouldSwitch = true;
-                    break;
+            if (due && due !== "None" && due.trim()) {
+                const d = new Date(due + "T00:00:00");
+                if (!isNaN(d)) {
+                    const today = new Date(); today.setHours(0, 0, 0, 0);
+                    remain = Math.ceil((d - today) / 86400000);
+                    dueFmt = d.toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
                 }
             }
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-            }
-        }
-        sortDir = !sortDir;
-    }
 
-    
-    let rows = document.querySelectorAll("#tableBody tr");
-    let rowsPerPage = 10;
-    let currentPage = 1;
+            /* กำหนดสี dot */
+            if (remain === null) dot.classList.add("s-grey");
+            else if (remain <= 0) dot.classList.add("s-red");
+            else if (remain <= 60) dot.classList.add("s-orange");
+            else if (remain <= 120) dot.classList.add("s-yellow");
+            else dot.classList.add("s-green");
 
-    function paginate() {
-        let start = (currentPage - 1) * rowsPerPage;
-        let end = start + rowsPerPage;
+            /* สร้าง tooltip text */
+            let statusLine = remain === null ? "ไม่มีข้อมูล"
+                : remain <= 0 ? "⚠ หมดอายุแล้ว"
+                    : `เหลือ ${remain} วัน`;
 
-        rows.forEach((row, i) => {
-            row.style.display = (i >= start && i < end) ? "" : "none";
+            dot.setAttribute("data-tip",
+                `${label}  |  ${num}\nหมดอายุ : ${dueFmt}\n${statusLine}`
+            );
         });
-        updatePaginationNumbers();
     }
 
-    function updatePaginationNumbers() {
-        let totalPages = Math.ceil(rows.length / rowsPerPage);
-        let container = document.getElementById("paginationNumbers");
-        container.innerHTML = "";
-
-        for (let i = 1; i <= totalPages; i++) {
-            let btn = `<button onclick="goToPage(${i})"
-                        style="margin:0 3px; padding:5px 10px; border-radius:4px;
-                        background:${i === currentPage ? 'var(--c3)' : '#ddd'};
-                        color:${i === currentPage ? 'white' : 'black'};">${i}</button>`;
-            container.innerHTML += btn;
-        }
-    }
-
-    function goToPage(n) { currentPage = n; paginate(); }
-    function changePageSize() {
-        rowsPerPage = document.getElementById("rowsPerPage").value;
+    /* ─────────────────────────────────────────
+       SEARCH
+    ───────────────────────────────────────── */
+    function globalSearch() {
+        const q = document.getElementById("searchInput").value.toLowerCase().trim();
+        document.querySelectorAll("#tableBody tr").forEach(r => {
+            r.dataset.hide = r.innerText.toLowerCase().includes(q) ? "0" : "1";
+        });
+        currentPage = 1;
         paginate();
     }
 
-    paginate();
+    /* ─────────────────────────────────────────
+       SORT
+    ───────────────────────────────────────── */
+    let sortDir = true;
+    function sortTable(n) {
+        const tbody = document.getElementById("tableBody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        rows.sort((a, b) => {
+            const x = a.cells[n].innerText.trim().toLowerCase();
+            const y = b.cells[n].innerText.trim().toLowerCase();
+            const nx = parseFloat(x), ny = parseFloat(y);
+            if (!isNaN(nx) && !isNaN(ny)) return sortDir ? nx - ny : ny - nx;
+            return sortDir ? x.localeCompare(y, "th") : y.localeCompare(x, "th");
+        });
+        rows.forEach(r => tbody.appendChild(r));
+        sortDir = !sortDir;
+        paginate();
+    }
 
-   
+    /* ─────────────────────────────────────────
+       PAGINATION
+    ───────────────────────────────────────── */
+    let currentPage = 1, rowsPerPage = 10;
+
+    function vis() {
+        return Array.from(document.querySelectorAll("#tableBody tr"))
+            .filter(r => r.dataset.hide !== "1");
+    }
+
+    function paginate() {
+        const rows = vis();
+        const max = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+        if (currentPage > max) currentPage = max;
+
+        const s = (currentPage - 1) * rowsPerPage, e = s + rowsPerPage;
+        document.querySelectorAll("#tableBody tr").forEach(r => r.style.display = "none");
+        rows.forEach((r, i) => r.style.display = (i >= s && i < e) ? "" : "none");
+
+        renderPg(max);
+    }
+
+    function renderPg(max) {
+        const c = document.getElementById("paginationNumbers");
+        c.innerHTML = "";
+
+        const add = (lbl, en, fn, active = false) => {
+            if (lbl === "…") {
+                const s = document.createElement("span");
+                s.className = "pg-ell"; s.textContent = "…";
+                c.appendChild(s); return;
+            }
+            const b = document.createElement("button");
+            b.className = "pg-btn" + (active ? " pg-on" : "");
+            b.textContent = lbl; b.disabled = !en;
+            if (en) b.onclick = fn;
+            c.appendChild(b);
+        };
+
+        add("‹", currentPage > 1, () => go(currentPage - 1));
+
+        const rng = (() => {
+            if (max <= 7) return Array.from({ length: max }, (_, i) => i + 1);
+            if (currentPage <= 4) return [1, 2, 3, 4, 5, "…", max];
+            if (currentPage >= max - 3) return [1, "…", max - 4, max - 3, max - 2, max - 1, max];
+            return [1, "…", currentPage - 1, currentPage, currentPage + 1, "…", max];
+        })();
+
+        rng.forEach(v => v === "…" ? add("…") : add(v, true, () => go(v), v === currentPage));
+
+        add("›", currentPage < max, () => go(currentPage + 1));
+    }
+
+    function go(n) { currentPage = n; paginate(); }
+    function changePageSize() {
+        rowsPerPage = +document.getElementById("rowsPerPage").value;
+        currentPage = 1; paginate();
+    }
+
+    /* ─────────────────────────────────────────
+       EXPORT
+    ───────────────────────────────────────── */
     function exportExcel() {
-        const table = document.getElementById("productTable").outerHTML;
-        const blob = new Blob([table], { type: "application/vnd.ms-excel" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "products.xls";
-        a.click();
+        const b = new Blob(["\ufeff" + document.getElementById("productTable").outerHTML],
+            { type: "application/vnd.ms-excel;charset=utf-8" });
+        Object.assign(document.createElement("a"),
+            { href: URL.createObjectURL(b), download: "products.xls" }).click();
+    }
+    function exportPDF() { window.print(); }
+
+    /* ─────────────────────────────────────────
+       ROW CLICK
+    ───────────────────────────────────────── */
+    function initRows() {
+        document.querySelectorAll(".clickable-row").forEach(r => {
+            r.addEventListener("click", () => location.href = r.dataset.href);
+        });
     }
 
-  
-    function exportPDF() {
-        window.print(); 
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".clickable-row").forEach(row => {
-                row.addEventListener("click", () => {
-                    window.location = row.dataset.href;
-                });
-            });
-        });
-
-    document.addEventListener("DOMContentLoaded", function () {
-
-            const dots = document.querySelectorAll(".mini-status");
-
-            dots.forEach(dot => {
-
-                const dueStr = dot.dataset.due;
-
-                if (!dueStr || dueStr === "None") {
-                    dot.style.display = "none";
-                    return;
-                }
-
-                const dueDate = new Date(dueStr + "T00:00:00");
-                if (isNaN(dueDate)) return;
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const remainDays = Math.ceil(
-                    (dueDate - today) / (1000 * 60 * 60 * 24)
-                );
-
-                if (remainDays <= 0) {
-                    dot.classList.add("status-red");
-                }
-                else if (remainDays <= 60) {
-                    dot.classList.add("status-orange");
-                }
-                else if (remainDays <= 120) {
-                    dot.classList.add("status-yellow");
-                }
-                else {
-                    dot.classList.add("status-green");
-                }
-            });
-
-        });
-
-
+    /* ─────────────────────────────────────────
+       INIT
+    ───────────────────────────────────────── */
+    document.addEventListener("DOMContentLoaded", () => {
+        initDots();
+        initRows();
+        paginate();
+    });
 </script>
 
 {% endblock %}
