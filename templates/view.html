@@ -12,22 +12,20 @@
     }
 
     .product-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px; 
-    }   
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
 
     .header-actions {
-    display: flex;
-    gap: 10px;
+        display: flex;
+        gap: 10px;
     }
 
     .btn-red {
         background: #eb7f22;
     }
-
-
 
     .product-card {
         display: flex;
@@ -100,51 +98,128 @@
     }
 
     .btn-blue2 {
-    background: #1a9dd7 !important;
+        background: #1a9dd7 !important;
     }
 
     .btn-blue2:hover:not(:disabled) {
         background: #0f8ec3 !important;
     }
-    
+
+    /* ===== SLIDE SECTION ===== */
     .slide-section {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease;
-    background: #ffffff;
-    margin-top: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    padding: 0 25px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+        background: #ffffff;
+        margin-top: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        padding: 0 25px;
     }
 
     .slide-section.open {
-        max-height: 500px;
+        max-height: 2000px;
         padding: 25px;
     }
 
     .slide-section h3 {
         color: #1a9dd7;
-        margin-bottom: 10px;
+        margin-bottom: 14px;
     }
 
-    .doc-plain {
-        width: 70%;
-        border-collapse: collapse;
-        margin-top: 14px;
+    /* ===== CHECKBOX FILTER PANEL ===== */
+    .filter-panel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+        background: #f4faff;
+        border-radius: 10px;
+        padding: 14px 18px;
+        border: 1px solid #c8e6f8;
+    }
+
+    .filter-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        cursor: pointer;
         font-size: 14px;
-        border: 1.5px solid #1a9dd7;   /* กรอบนอก */
+        font-weight: 600;
+        color: #333;
+        padding: 5px 12px;
+        border-radius: 20px;
+        background: #fff;
+        border: 1.5px solid #c8e6f8;
+        transition: all 0.2s;
+        user-select: none;
+    }
+
+    .filter-label input[type="checkbox"] {
+        display: none;
+    }
+
+    .filter-label .chip-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ccc;
+    }
+
+    .filter-label.checked {
+        background: #1a9dd7;
+        color: #fff;
+        border-color: #1a9dd7;
+    }
+
+    .filter-label.checked .chip-dot {
+        background: #fff;
+    }
+
+    .filter-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .filter-btn {
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .filter-btn-all {
+        background: #1a9dd7;
+        color: #fff;
+    }
+
+    .filter-btn-none {
+        background: #e0e0e0;
+        color: #555;
+    }
+
+    /* ===== DOC TABLE ===== */
+    .doc-plain {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 6px;
+        font-size: 14px;
+        border: 1.5px solid #1a9dd7;
         border-radius: 8px;
         overflow: hidden;
     }
 
-    /* header */
     .doc-plain thead th {
         padding: 10px 12px;
         text-align: center;
         font-weight: 600;
-        color:  #1a9dd7;
-        border-bottom: 5px solid  #1a9dd7;  /* เส้นหัวตาราง */
+        color: #1a9dd7;
+        border-bottom: 3px solid #1a9dd7;
+        background: #f0f8fd;
     }
 
     .doc-plain td {
@@ -152,6 +227,7 @@
         text-align: center;
         font-weight: 400;
         border-bottom: 1px solid #e3eaf1;
+        vertical-align: middle;
     }
 
     .doc-plain th:not(:last-child),
@@ -166,9 +242,9 @@
     .doc-type {
         text-align: left;
         font-weight: 600;
-        /* color: #1a9dd7; */
     }
-  
+
+    /* ===== STATUS ===== */
     .status-dot {
         display: inline-block;
         width: 14px;
@@ -177,7 +253,6 @@
         border: 2px solid #ccc;
     }
 
-    /* สีสถานะ */
     .status-green {
         background: #51b74b;
         border-color: #51b74b;
@@ -185,17 +260,24 @@
 
     .status-orange {
         background: #fa6d09;
-        border-color: #fa6d09
+        border-color: #fa6d09;
     }
 
     .status-red {
         background: #e74c3c;
         border-color: #e74c3c;
     }
+
     .status-yellow {
-    background: #f1c40f;      
-    border-color: #f1c40f;
+        background: #f1c40f;
+        border-color: #f1c40f;
     }
+
+    .status-grey {
+        background: #ccc;
+        border-color: #ccc;
+    }
+
     .status-cell {
         display: flex;
         flex-direction: column;
@@ -207,6 +289,167 @@
         font-size: 12px;
         color: #555;
         white-space: nowrap;
+    }
+
+    /* ===== FILE ATTACH ===== */
+    .file-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        min-width: 130px;
+    }
+
+    .file-upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #1a9dd7;
+        font-weight: 600;
+        padding: 4px 10px;
+        border: 1.5px dashed #1a9dd7;
+        border-radius: 6px;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+    .file-upload-label:hover {
+        background: #eaf5fb;
+    }
+
+    .file-upload-label input {
+        display: none;
+    }
+
+    .file-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #51b74b;
+        font-weight: 600;
+        padding: 4px 10px;
+        background: #f0faf0;
+        border: 1.5px solid #51b74b;
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+    }
+
+    .file-link:hover {
+        background: #d8f5d8;
+    }
+
+    .file-name-display {
+        font-size: 11px;
+        color: #888;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ===== FILE VIEWER MODAL ===== */
+    .file-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .file-modal-overlay.active {
+        display: flex;
+    }
+
+    .file-modal-box {
+        background: #fff;
+        border-radius: 16px;
+        width: 85vw;
+        height: 88vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .file-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 22px;
+        background: #1a9dd7;
+        color: #fff;
+    }
+
+    .file-modal-header h4 {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .file-modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .file-modal-body {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+    }
+
+    .file-modal-body iframe,
+    .file-modal-body img {
+        width: 100%;
+        height: 100%;
+        border: none;
+        object-fit: contain;
+    }
+
+    .file-modal-footer {
+        padding: 12px 22px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #eee;
+    }
+
+    .btn-download {
+        background: #51b74b;
+        color: #fff;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* ===== DOC ROW HIDE/SHOW ===== */
+    .doc-row {
+        transition: opacity 0.2s;
+    }
+
+    .doc-row.hidden {
+        display: none;
     }
 
     /* ===== DELETE MODAL ===== */
@@ -260,58 +503,75 @@
         cursor: pointer;
     }
 
+    .section-title-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+    .empty-msg {
+        text-align: center;
+        color: #aaa;
+        font-size: 14px;
+        padding: 18px 0;
+        display: none;
+    }
 </style>
 
+<!-- ===== PRODUCT HEADER ===== -->
 <div class="product-header">
     <h2>{{ product.product }}</h2>
-    
     <div class="header-actions">
         {% if session.role in ["editor", "admin"] %}
         <a href="/product/{{ product.id }}/edit">
             <button class="btn-main btn-blue">Edit</button>
         </a>
         {% endif %}
-    
         {% if session.get("role") == "admin" %}
-        <button class="btn-main btn-red"  onclick="event.stopPropagation(); confirmDelete({{ product.id }})">
+        <button class="btn-main btn-red" onclick="event.stopPropagation(); confirmDelete({{ product.id }})">
             Delete
         </button>
         {% endif %}
-  
     </div>
 </div>
 
+<!-- ===== DELETE MODAL ===== -->
 <div id="deleteModal" class="modal-overlay">
     <div class="modal-box">
         <h3>ยืนยันการลบข้อมูล</h3>
-
-        <p>
-            ต้องการลบผลิตภัณฑ์<br>
-            <strong>{{ product.product }}</strong><br>
-            จริงหรือไม่ ?
-        </p>
-
+        <p>ต้องการลบผลิตภัณฑ์<br><strong>{{ product.product }}</strong><br>จริงหรือไม่ ?</p>
         <form id="deleteForm" onsubmit="return submitDelete(event)">
             <div class="modal-actions">
                 <button type="submit" class="btn-confirm">ใช่, ลบ</button>
-                <button type="button" class="btn-cancel" onclick="closeDelete()">
-                    ยกเลิก
-                </button>
+                <button type="button" class="btn-cancel" onclick="closeDelete()">ยกเลิก</button>
             </div>
         </form>
     </div>
 </div>
 
+<!-- ===== FILE VIEWER MODAL ===== -->
+<div id="fileViewerModal" class="file-modal-overlay">
+    <div class="file-modal-box">
+        <div class="file-modal-header">
+            <h4 id="fileViewerTitle">ดูเอกสาร</h4>
+            <button class="file-modal-close" onclick="closeFileViewer()">✕</button>
+        </div>
+        <div class="file-modal-body" id="fileViewerBody"></div>
+        <div class="file-modal-footer">
+            <a id="fileDownloadLink" href="#" download>
+                <button class="btn-download">⬇ ดาวน์โหลด</button>
+            </a>
+            <button class="btn-cancel" onclick="closeFileViewer()">ปิด</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PRODUCT CARD ===== -->
 <div class="product-card">
-
-    <!-- รูปสินค้า -->
     <img src="{{ product.image_url or '/static/1pole.png' }}" class="product-img">
- 
-    
-    <div class="product-info"> 
-
+    <div class="product-info">
         <table class="details-table">
-
             <tr>
                 <td>Company</td>
                 <td>{{ product.company }}</td>
@@ -339,291 +599,348 @@
             <tr>
                 <td>สีผลิตภัณฑ์</td>
                 <td>{{ product.color }}</td>
-            <tr>
+            </tr>
             <tr>
                 <td>น้ำหนักผลิตภัณฑ์</td>
                 <td>{{ product.weight }}</td>
-            <tr>
-        
+            </tr>
         </table>
+    </div>
+</div>
 
-        <!-- ปุ่มใช้งาน -->
-       
+<!-- ===== ACTION BUTTONS ===== -->
+<div class="btn-area">
+    <button class="btn-main btn-blue2" onclick="toggleSection('saleDocs')">
+        📄 Sale Documents
+    </button>
+    <button class="btn-main btn-orange" onclick="toggleSection('regDocs')">
+        📋 Regulation Documents
+    </button>
+</div>
+
+<!-- ===== REGULATION DOCUMENTS ===== -->
+<div id="regDocs" class="slide-section">
+    <div class="section-title-row">
+        <h3>📋 Regulation Documents</h3>
     </div>
 
-</div>
-
-<div class="btn-area">
-
-    <button class="btn-main btn-blue2" onclick="toggleSection('saleDocs')">
-        Sale Documents
-    </button>
-
-    <button class="btn-main btn-orange" onclick="toggleSection('regDocs')">
-        Regulation Documents
-    </button>
-
-    <!-- <button class="btn-main btn-orange" onclick="window.print()">Print</button> -->
-    <!-- </div> -->
-
-</div>
-
-<div id="regDocs" class="slide-section">
-    
-  
+    <!-- Checkbox Filter -->
+    <div class="filter-panel" id="regFilter">
+        <label class="filter-label checked" data-target="reg" data-key="mit">
+            <input type="checkbox" checked> <span class="chip-dot"></span> MiT
+        </label>
+        <label class="filter-label checked" data-target="reg" data-key="iso">
+            <input type="checkbox" checked> <span class="chip-dot"></span> ISO
+        </label>
+        <label class="filter-label checked" data-target="reg" data-key="tis">
+            <input type="checkbox" checked> <span class="chip-dot"></span> มอก
+        </label>
+        <label class="filter-label checked" data-target="reg" data-key="tisi">
+            <input type="checkbox" checked> <span class="chip-dot"></span> สมอ
+        </label>
+        <label class="filter-label checked" data-target="reg" data-key="cfp">
+            <input type="checkbox" checked> <span class="chip-dot"></span> CFP
+        </label>
+        <label class="filter-label checked" data-target="reg" data-key="cfo">
+            <input type="checkbox" checked> <span class="chip-dot"></span> CFO
+        </label>
+        <div class="filter-actions">
+            <button class="filter-btn filter-btn-all" onclick="selectAll('reg')">เลือกทั้งหมด</button>
+            <button class="filter-btn filter-btn-none" onclick="selectNone('reg')">ล้าง</button>
+        </div>
+    </div>
 
     <table class="doc-plain">
-        <colgroup>
-            <col style="width: 5%;"> 
-            <col style="width: 5%;"> <!-- Number -->
-            <col style="width: 5%;"> <!-- Issue Date -->
-            <col style="width: 5%;"> <!-- Due Date -->
-            <col style="width: 5%;">
-        </colgroup>
-
         <thead>
             <tr>
-                <th>Regulation Documents</th>
-                <th>Number</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
-                <th>Status</th>
+                <th>เอกสาร</th>
+                <th>เลขที่</th>
+                <th>วันที่ออก</th>
+                <th>วันหมดอายุ</th>
+                <th>สถานะ</th>
+                <th>ไฟล์แนบ</th>
             </tr>
         </thead>
-        <tbody>
-        
-            <tr>
+        <tbody id="regTableBody">
+            <tr class="doc-row" data-key="mit">
                 <td class="doc-type">MiT</td>
                 <td>{{ product.mit }}</td>
                 <td>{{ product.mit_issue }}</td>
-                <td class="due-date" data-due="{{ product.mit_due }}">
-                    {{ product.mit_due }}
+                <td class="due-date" data-due="{{ product.mit_due }}">{{ product.mit_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
                 </td>
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td>
+                    <div class="file-cell" data-doc-id="reg_mit"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="iso">
                 <td class="doc-type">ISO</td>
                 <td>{{ product.iso }}</td>
                 <td>{{ product.iso_issue }}</td>
-                <td class="due-date" data-due="{{ product.iso_due }}">
-                    {{ product.iso_due }}
+                <td class="due-date" data-due="{{ product.iso_due }}">{{ product.iso_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
                 </td>
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td>
+                    <div class="file-cell" data-doc-id="reg_iso"></div>
                 </td>
             </tr>
-
-            <tr>
+            <tr class="doc-row" data-key="tis">
                 <td class="doc-type">มอก</td>
                 <td>{{ product.tis }}</td>
                 <td>{{ product.tis_issue }}</td>
-                <td class="due-date" data-due="{{ product.tis_due }}">
-                    {{ product.tis_due }}
+                <td class="due-date" data-due="{{ product.tis_due }}">{{ product.tis_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
                 </td>
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td>
+                    <div class="file-cell" data-doc-id="reg_tis"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="tisi">
                 <td class="doc-type">สมอ</td>
                 <td>{{ product.tisi }}</td>
                 <td>{{ product.tisi_issue }}</td>
-                <td class="due-date" data-due="{{ product.tisi_due }}">
-                    {{ product.tisi_due }}
+                <td class="due-date" data-due="{{ product.tisi_due }}">{{ product.tisi_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
                 </td>
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td>
+                    <div class="file-cell" data-doc-id="reg_tisi"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="cfp">
                 <td class="doc-type">CFP</td>
                 <td>{{ product.cfp }}</td>
                 <td>{{ product.cfp_issue }}</td>
-                <td class="due-date" data-due="{{ product.cfp_due }}">
-                    {{ product.cfp_due }}
+                <td class="due-date" data-due="{{ product.cfp_due }}">{{ product.cfp_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
                 </td>
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td>
+                    <div class="file-cell" data-doc-id="reg_cfp"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="cfo">
                 <td class="doc-type">CFO</td>
                 <td>{{ product.cfo }}</td>
                 <td>{{ product.cfo_issue }}</td>
-                <td class="due-date" data-due="{{ product.cfo_due }}">
-                    {{ product.cfo_due }}
+                <td class="due-date" data-due="{{ product.cfo_due }}">{{ product.cfo_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
                 </td>
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td>
+                    <div class="file-cell" data-doc-id="reg_cfo"></div>
                 </td>
             </tr>
-        
         </tbody>
     </table>
+    <div class="empty-msg" id="regEmpty">— ไม่มีเอกสารที่เลือก —</div>
 </div>
 
+<!-- ===== SALE DOCUMENTS ===== -->
 <div id="saleDocs" class="slide-section">
-    <!-- <h3>Sale Documents</h3> -->
+    <div class="section-title-row">
+        <h3>📄 Sale Documents</h3>
+    </div>
+
+    <!-- Checkbox Filter -->
+    <div class="filter-panel" id="saleFilter">
+        <label class="filter-label checked" data-target="sale" data-key="factsheet">
+            <input type="checkbox" checked> <span class="chip-dot"></span> FactSheet
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="techdata">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Technical Data
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="outline">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Outline
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="tt1">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Type Test 1
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="tt2">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Type Test 2
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="tt3">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Type Test 3
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="tt4">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Type Test 4
+        </label>
+        <label class="filter-label checked" data-target="sale" data-key="tt5">
+            <input type="checkbox" checked> <span class="chip-dot"></span> Type Test 5
+        </label>
+        <div class="filter-actions">
+            <button class="filter-btn filter-btn-all" onclick="selectAll('sale')">เลือกทั้งหมด</button>
+            <button class="filter-btn filter-btn-none" onclick="selectNone('sale')">ล้าง</button>
+        </div>
+    </div>
 
     <table class="doc-plain">
-        <colgroup>
-            <col style="width: 5%;"> 
-            <col style="width: 5%;"> <!-- Number -->
-            <col style="width: 5%;"> <!-- Issue Date -->
-            <col style="width: 5%;"> <!-- Due Date -->
-        </colgroup>
         <thead>
             <tr>
-                <th>Sale Documents</th>
-                <th>Number</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
+                <th>เอกสาร</th>
+                <th>เลขที่</th>
+                <th>วันที่ออก</th>
+                <th>วันหมดอายุ</th>
+                <th>สถานะ</th>
+                <th>ไฟล์แนบ</th>
             </tr>
         </thead>
-        <tbody>
-        
-            <tr>
+        <tbody id="saleTableBody">
+            <tr class="doc-row" data-key="factsheet">
                 <td class="doc-type">FactSheet</td>
                 <td>{{ product.factsheet }}</td>
                 <td>{{ product.factsheet_issue }}</td>
-                <td>{{ product.factsheet_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.factsheet_due }}">{{ product.factsheet_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_factsheet"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="techdata">
                 <td class="doc-type">Technical Data</td>
                 <td>{{ product.technicaldata }}</td>
                 <td>{{ product.tech_issue }}</td>
-                <td>{{ product.tech_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.tech_due }}">{{ product.tech_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_techdata"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="outline">
                 <td class="doc-type">Outline</td>
                 <td>{{ product.outline }}</td>
                 <td>{{ product.outline_issue }}</td>
-                <td>{{ product.outline_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.outline_due }}">{{ product.outline_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_outline"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="tt1">
                 <td class="doc-type">Type Test 1</td>
                 <td>{{ product.typetest1 }}</td>
                 <td>{{ product.typetest1_issue }}</td>
-                <td>{{ product.typetest1_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.typetest1_due }}">{{ product.typetest1_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_tt1"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="tt2">
                 <td class="doc-type">Type Test 2</td>
                 <td>{{ product.typetest2 }}</td>
                 <td>{{ product.typetest2_issue }}</td>
-                <td>{{ product.typetest2_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.typetest2_due }}">{{ product.typetest2_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_tt2"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="tt3">
                 <td class="doc-type">Type Test 3</td>
                 <td>{{ product.typetest3 }}</td>
                 <td>{{ product.typetest3_issue }}</td>
-                <td>{{ product.typetest3_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.typetest3_due }}">{{ product.typetest3_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_tt3"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="tt4">
                 <td class="doc-type">Type Test 4</td>
                 <td>{{ product.typetest4 }}</td>
                 <td>{{ product.typetest4_issue }}</td>
-                <td>{{ product.typetest4_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.typetest4_due }}">{{ product.typetest4_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_tt4"></div>
                 </td>
             </tr>
-        
-            <tr>
+            <tr class="doc-row" data-key="tt5">
                 <td class="doc-type">Type Test 5</td>
                 <td>{{ product.typetest5 }}</td>
                 <td>{{ product.typetest5_issue }}</td>
-                <td>{{ product.typetest5_due }}</td>
-
-                <td class="status-cell">
-                    <span class="status-dot"></span>
-                    <div class="status-text"></div>
+                <td class="due-date" data-due="{{ product.typetest5_due }}">{{ product.typetest5_due }}</td>
+                <td>
+                    <div class="status-cell"><span class="status-dot"></span>
+                        <div class="status-text"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="file-cell" data-doc-id="sale_tt5"></div>
                 </td>
             </tr>
-        
         </tbody>
     </table>
+    <div class="empty-msg" id="saleEmpty">— ไม่มีเอกสารที่เลือก —</div>
 </div>
 
 
-
 <script>
-    
+    /* =====================================================
+       1. DELETE MODAL
+    ===================================================== */
     let deleteId = null;
+
     function confirmDelete(id) {
-            deleteId = id;
-
-        const form = document.getElementById("deleteForm");
-        form.action = "/product/" + id + "/delete";
-
+        deleteId = id;
+        document.getElementById("deleteForm").action = "/product/" + id + "/delete";
         document.getElementById("deleteModal").style.display = "flex";
     }
+
     function closeDelete() {
         deleteId = null;
         document.getElementById("deleteModal").style.display = "none";
     }
+
     async function submitDelete(e) {
-        e.preventDefault();  // ❗ หยุด form ไม่ให้ reload หน้า
-
+        e.preventDefault();
         const form = document.getElementById("deleteForm");
-        const actionUrl = form.action;
-
-        const res = await fetch(actionUrl, {
-            method: "POST",
-            credentials: "same-origin"
-        });
-
+        const res = await fetch(form.action, { method: "POST", credentials: "same-origin" });
         const data = await res.json();
-
         if (data.ok) {
             closeDelete();
             alert("ลบข้อมูลเรียบร้อยแล้ว");
@@ -632,66 +949,248 @@
             alert("เกิดข้อผิดพลาด");
         }
     }
-    
+
+    /* =====================================================
+       2. TOGGLE SLIDE SECTION
+    ===================================================== */
     function toggleSection(id) {
         const section = document.getElementById(id);
         section.classList.toggle("open");
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (section.classList.contains("open")) {
+            setTimeout(() => section.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+        }
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-            const cells = document.querySelectorAll(".due-date");
+    /* =====================================================
+       3. STATUS CALCULATION
+    ===================================================== */
+    function calcStatus(dueStr, dotEl, textEl) {
+        if (!dueStr || dueStr === "None" || dueStr.trim() === "") {
+            if (dotEl) dotEl.classList.add("status-grey");
+            if (textEl) textEl.textContent = "ไม่มีข้อมูล";
+            return;
+        }
 
-            cells.forEach(cell => {
-                const dueStr = cell.dataset.due;
+        const dueDate = new Date(dueStr + "T00:00:00");
+        if (isNaN(dueDate)) return;
 
-                // ✅ ถ้าไม่มีค่า / เป็น null / เป็นค่าว่าง / เป็น None → ไม่ต้องคำนวณ
-                if (!dueStr || dueStr === "None" || dueStr.trim() === "") {
-                    cell.textContent = "";   // ลบคำว่า None ออก
-                    return;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const remainDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+        if (!dotEl || !textEl) return;
+
+        if (remainDays <= 0) {
+            dotEl.classList.add("status-red");
+            textEl.textContent = "หมดอายุแล้ว";
+        } else if (remainDays <= 60) {
+            dotEl.classList.add("status-orange");
+            textEl.textContent = `เหลือ ${remainDays} วัน`;
+        } else if (remainDays <= 120) {
+            dotEl.classList.add("status-yellow");
+            textEl.textContent = `เหลือ ${remainDays} วัน`;
+        } else {
+            dotEl.classList.add("status-green");
+            textEl.textContent = `เหลือ ${remainDays} วัน`;
+        }
+    }
+
+    /* =====================================================
+       4. CHECKBOX FILTER
+    ===================================================== */
+    function applyFilter(target) {
+        const labels = document.querySelectorAll(`[data-target="${target}"]`);
+        let visibleCount = 0;
+
+        labels.forEach(label => {
+            const key = label.dataset.key;
+            const cb = label.querySelector("input[type=checkbox]");
+            const isChecked = cb.checked;
+
+            // style chip
+            label.classList.toggle("checked", isChecked);
+
+            // show/hide rows in both tables
+            document.querySelectorAll(`.doc-row[data-key="${key}"]`).forEach(row => {
+                // only affect rows in correct section
+                const section = row.closest(".slide-section");
+                const sectionId = section ? section.id : "";
+                const belongs = (target === "reg" && sectionId === "regDocs") ||
+                    (target === "sale" && sectionId === "saleDocs");
+                if (belongs) {
+                    row.classList.toggle("hidden", !isChecked);
+                    if (isChecked) visibleCount++;
                 }
-
-                const dueDate = new Date(dueStr + "T00:00:00");
-                if (isNaN(dueDate)) return;  // กันกรณีวันที่ format ผิด
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const remainDays = Math.ceil(
-                    (dueDate - today) / (1000 * 60 * 60 * 24)
-                );
-
-                const row = cell.closest("tr");
-                const statusDot = row.querySelector(".status-dot");
-                const statusText = row.querySelector(".status-text");
-
-                if (!statusDot || !statusText) return;
-
-                // 🔴 หมดอายุ
-                if (remainDays <= 0) {
-                    statusDot.classList.add("status-red");
-                    statusText.textContent = "หมดอายุแล้ว";
-                    return;
-                }
-
-                // 🟠 ใกล้หมด
-                if (remainDays <= 60) {
-                    statusDot.classList.add("status-orange");
-                }
-                // 🟡 เตือนล่วงหน้า
-                else if (remainDays <= 120) {
-                    statusDot.classList.add("status-yellow");
-                }
-                // 🟢 ปกติ
-                else {
-                    statusDot.classList.add("status-green");
-                }
-
-                statusText.textContent = `เหลือ ${remainDays} วัน`;
             });
         });
 
+        const emptyMsg = document.getElementById(target === "reg" ? "regEmpty" : "saleEmpty");
+        if (emptyMsg) emptyMsg.style.display = visibleCount === 0 ? "block" : "none";
+    }
 
+    function selectAll(target) {
+        document.querySelectorAll(`[data-target="${target}"] input`).forEach(cb => cb.checked = true);
+        applyFilter(target);
+    }
+
+    function selectNone(target) {
+        document.querySelectorAll(`[data-target="${target}"] input`).forEach(cb => cb.checked = false);
+        applyFilter(target);
+    }
+
+    // Attach click listeners to filter chips
+    document.querySelectorAll(".filter-label").forEach(label => {
+        label.addEventListener("click", function () {
+            const cb = this.querySelector("input[type=checkbox]");
+            cb.checked = !cb.checked;
+            const target = this.dataset.target;
+            applyFilter(target);
+        });
+    });
+
+    /* =====================================================
+       5. FILE ATTACHMENT (client-side, localStorage-based)
+          ต้องเปลี่ยนเป็น server upload จริงใน production
+    ===================================================== */
+    const fileStore = {}; // { docId: { name, url, type } }
+
+    function buildFileCell(cell) {
+        const docId = cell.dataset.docId;
+        const stored = fileStore[docId];
+
+        cell.innerHTML = "";
+
+        if (stored) {
+            // Show view button + file name
+            const viewBtn = document.createElement("a");
+            viewBtn.className = "file-link";
+            viewBtn.innerHTML = `👁 ดูไฟล์`;
+            viewBtn.onclick = (e) => { e.preventDefault(); openFileViewer(docId); };
+
+            const nameEl = document.createElement("div");
+            nameEl.className = "file-name-display";
+            nameEl.title = stored.name;
+            nameEl.textContent = stored.name;
+
+            // Re-upload option (small)
+            const reUpload = buildUploadLabel(docId, "🔄", true);
+
+            cell.appendChild(viewBtn);
+            cell.appendChild(nameEl);
+            cell.appendChild(reUpload);
+        } else {
+            // Show attach button
+            const uploadLabel = buildUploadLabel(docId, "📎 แนบไฟล์", false);
+            cell.appendChild(uploadLabel);
+        }
+    }
+
+    function buildUploadLabel(docId, text, small) {
+        const label = document.createElement("label");
+        label.className = "file-upload-label";
+        if (small) label.style.fontSize = "11px";
+        label.innerHTML = text;
+
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".pdf,.png,.jpg,.jpeg,.docx,.xlsx";
+        input.onchange = (e) => handleFileUpload(e, docId);
+
+        label.appendChild(input);
+        return label;
+    }
+
+    function handleFileUpload(e, docId) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            fileStore[docId] = {
+                name: file.name,
+                url: ev.target.result,
+                type: file.type
+            };
+            // Re-render this cell
+            const cell = document.querySelector(`[data-doc-id="${docId}"]`);
+            if (cell) buildFileCell(cell);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /* =====================================================
+       6. FILE VIEWER MODAL
+    ===================================================== */
+    function openFileViewer(docId) {
+        const f = fileStore[docId];
+        if (!f) return;
+
+        document.getElementById("fileViewerTitle").textContent = f.name;
+        document.getElementById("fileDownloadLink").href = f.url;
+        document.getElementById("fileDownloadLink").download = f.name;
+
+        const body = document.getElementById("fileViewerBody");
+        body.innerHTML = "";
+
+        if (f.type === "application/pdf") {
+            const iframe = document.createElement("iframe");
+            iframe.src = f.url;
+            body.appendChild(iframe);
+        } else if (f.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.src = f.url;
+            img.style.maxWidth = "100%";
+            img.style.maxHeight = "100%";
+            body.appendChild(img);
+        } else {
+            // Generic: offer download
+            body.innerHTML = `<div style="text-align:center;padding:40px;color:#666;">
+            <div style="font-size:48px">📄</div>
+            <p style="margin-top:12px;font-size:16px;font-weight:600;">${f.name}</p>
+            <p style="color:#aaa;font-size:13px;">ไฟล์ประเภทนี้ไม่รองรับการแสดงผล กรุณาดาวน์โหลด</p>
+        </div>`;
+        }
+
+        document.getElementById("fileViewerModal").classList.add("active");
+    }
+
+    function closeFileViewer() {
+        document.getElementById("fileViewerModal").classList.remove("active");
+        document.getElementById("fileViewerBody").innerHTML = "";
+    }
+
+    // Close modal on overlay click
+    document.getElementById("fileViewerModal").addEventListener("click", function (e) {
+        if (e.target === this) closeFileViewer();
+    });
+
+    /* =====================================================
+       7. DOM READY — init all
+    ===================================================== */
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ---- Status dots ----
+        document.querySelectorAll(".due-date").forEach(cell => {
+            const dueStr = cell.dataset.due;
+            if (!dueStr || dueStr === "None" || dueStr.trim() === "") {
+                cell.textContent = "";
+            } else {
+                // keep formatted date text, process status
+            }
+            const row = cell.closest("tr");
+            if (!row) return;
+            const dotEl = row.querySelector(".status-dot");
+            const textEl = row.querySelector(".status-text");
+            calcStatus(dueStr, dotEl, textEl);
+        });
+
+        // ---- File cells ----
+        document.querySelectorAll(".file-cell").forEach(cell => buildFileCell(cell));
+
+        // ---- Initial filter apply ----
+        applyFilter("reg");
+        applyFilter("sale");
+    });
 </script>
 
 {% endblock %}
