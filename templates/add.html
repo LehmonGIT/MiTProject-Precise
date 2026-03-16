@@ -366,8 +366,9 @@
         const data = await res.json()
 
         if (!data.ok) {
+            const errList = (data.errors || []).join("\n")
             document.getElementById("resultText").innerText =
-                "❌ " + data.error
+                "❌ " + data.error + "\n\n" + errList  // ← เพิ่ม errors array
             return
         }
 

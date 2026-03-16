@@ -134,7 +134,7 @@ def import_prepare():
 
 def read_file_to_df(file):
     if file["filename"].lower().endswith(".csv"):
-        return pd.read_csv(file["path"])
+        return pd.read_csv(file["path"], encoding="utf-8-sig")
     else:
         return pd.read_excel(file["path"])
 
@@ -186,24 +186,31 @@ def import_validate():
     except Exception as e:
         return jsonify(ok=False, error=str(e)), 500
     
-def to_mark(v):
-    if v is None:
-        return "X"
-
-    if isinstance(v, str):
-        v = v.strip().lower()
-
-    if v in ("✓", "yes", "y", "true", "1", 1, True):
-        return "✓"
-
-    return "X"
-
 def clean(v):
-    if v is None:
+    try:
+        if v is None:
+            return None
+        if isinstance(v, float) and math.isnan(v):
+            return None
+        s = str(v).strip()
+        if s in ("", "-", "nan", "NaN"):
+            return None
+        return s
+    except:
         return None
-    if pd.isna(v):
-        return None
-    return v
+
+def to_mark(v):
+    try:
+        if v is None:
+            return "X"
+        if isinstance(v, float) and math.isnan(v):
+            return "X"
+        s = str(v).strip().lower()
+        if s in ("✓", "yes", "y", "true", "1"):
+            return "✓"
+        return "X"
+    except:
+        return "X"
 
 @app.route("/products/import/commit", methods=["POST"])
 @login_required
@@ -376,8 +383,8 @@ def import_commit():
         return jsonify(ok=True, success=success, failed=failed, errors=errors)
 
     except Exception as e:  # ← try-except ชั้นนอกสุด อันเดียว
-             print("IMPORT COMMIT ERROR:", traceback.format_exc())
-    return jsonify(ok=False, error=str(e)), 500
+        print("IMPORT COMMIT ERROR:", traceback.format_exc())
+        return jsonify(ok=False, error=str(e)), 500
     
    
     
