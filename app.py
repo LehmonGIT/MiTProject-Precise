@@ -388,18 +388,67 @@ def import_commit():
     
    
     
-@app.route("/db-test")
-def db_test():
+@app.route("/debug-import")
+def debug_import():
+    import math
+    
+    # ทดสอบ to_mark และ clean กับค่าจาก CSV จริง
+    test_vals = ["✓", "✗", "-", " - ", "", None, float("nan"), "2025-01-18"]
+    results = {}
+    for v in test_vals:
+        results[repr(v)] = {
+            "to_mark": to_mark(v),
+            "clean": clean(v)
+        }
+    
+    # ทดสอบ DB insert 1 row
     try:
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT 1")
-        cur.fetchone()
+        cur.execute("""
+            INSERT INTO products (company, business, fgcode, core_product, product_descrip,
+                mit, mit_issue, mit_due, iso, iso_issue, iso_due,
+                tis, tis_issue, tis_due, tisi, tisi_issue, tisi_due,
+                cfp, cfp_issue, cfp_due, cfo, cfo_issue, cfo_due,
+                factsheet, factsheet_issue, factsheet_due,
+                technicaldata, tech_issue, tech_due,
+                outline, outline_issue, outline_due,
+                typetest1, typetest1_issue, typetest1_due,
+                typetest2, typetest2_issue, typetest2_due,
+                typetest3, typetest3_issue, typetest3_due,
+                typetest4, typetest4_issue, typetest4_due,
+                typetest5, typetest5_issue, typetest5_due,
+                details, size, color, weight)
+            VALUES (%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,
+                    %s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,
+                    %s,%s,%s, %s,%s,%s, %s,%s,%s,
+                    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                    %s,%s,%s,%s)
+        """, (
+            "TEST_CO", "TEST_BIZ", "TEST-FGCODE-DEBUG", "TestProduct", "desc",
+            "MiT001", "2025-01-01", "2025-12-31", "✓", "2025-01-01", "2025-12-31",
+            "✓", "2025-01-01", "2025-12-31", "X", None, None,
+            "✓", "2025-01-01", "2025-12-31", "X", None, None,
+            "✓", "2025-01-01", "2025-12-31",
+            "X", None, None,
+            "X", None, None,
+            "X", None, None,
+            "X", None, None,
+            "X", None, None,
+            "X", None, None,
+            "X", None, None,
+            "X", None, None,
+            "debug details", "100x200", "black", "5kg"
+        ))
+        conn.commit()
         cur.close()
         conn.close()
-        return "DB CONNECT OK"
+        db_result = "✅ INSERT สำเร็จ"
     except Exception as e:
-        return str(e), 500
+        import traceback
+        db_result = "❌ INSERT ERROR: " + traceback.format_exc()
+
+    return f"<pre>to_mark/clean tests:\n{results}\n\nDB test:\n{db_result}</pre>"
 
 
 @app.route("/product/<int:pid>")
