@@ -11,10 +11,14 @@ import tempfile
 import uuid
 import math
 import traceback
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 app.secret_key = "dev-secret"
 
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 
 UPLOAD_DIR = "/tmp/mit_import"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -470,6 +474,22 @@ def view(pid):
 
     return render_template("view.html", product=product)
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/init-image-col")
+def init_image_col():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return "✅ เพิ่ม column image_url สำเร็จ"
+    except Exception as e:
+        return f"❌ {e}"
+    
 
 @app.route("/product/<int:pid>/edit", methods=["GET", "POST"])
 @login_required
@@ -478,7 +498,6 @@ def edit(pid):
     conn = get_db()
     cur = conn.cursor()
 
-    # ดึงข้อมูลสินค้าเดิม
     cur.execute("SELECT * FROM products WHERE id=%s", (pid,))
     row = cur.fetchone()
 
@@ -490,46 +509,41 @@ def edit(pid):
     colnames = [desc[0] for desc in cur.description]
     product = dict(zip(colnames, row))
 
-    # ── GET: แสดงฟอร์ม ────────────────────────────────
     if request.method == "GET":
         cur.close()
         conn.close()
         return render_template("edit.html", product=product)
 
-    # ── POST: บันทึกข้อมูล ────────────────────────────
     try:
-        # รับค่าจากฟอร์ม
-        company        = request.form.get("company", "").strip()
-        business       = request.form.get("business", "").strip()
-        fgcode         = request.form.get("fgcode", "").strip()
-        core_product   = request.form.get("core_product", "").strip()
-        product_descrip= request.form.get("product_descrip", "").strip() or None
-        size           = request.form.get("size", "").strip() or None
-        color          = request.form.get("color", "").strip() or None
-        weight         = request.form.get("weight", "").strip() or None
+        company         = request.form.get("company", "").strip()
+        business        = request.form.get("business", "").strip()
+        fgcode          = request.form.get("fgcode", "").strip()
+        core_product    = request.form.get("core_product", "").strip()
+        product_descrip = request.form.get("product_descrip", "").strip() or None
+        size            = request.form.get("size", "").strip() or None
+        color           = request.form.get("color", "").strip() or None
+        weight          = request.form.get("weight", "").strip() or None
 
-        # validate required
         if not all([company, business, fgcode, core_product]):
             flash("กรุณากรอกข้อมูลที่จำเป็นให้ครบ", "error")
             cur.close()
             conn.close()
             return render_template("edit.html", product=product)
 
-        # ── จัดการรูปภาพ ──────────────────────────────
         image_url = product.get("image_url")  # ค่าเดิม
 
         remove_image = request.form.get("remove_image", "0")
         if remove_image == "1":
-            # ต้องการลบรูป
+            # ลบไฟล์ออกจาก disk ด้วย
+            if image_url:
+                old_path = os.path.join(app.static_folder, image_url.replace("/static/", ""))
+                if os.path.exists(old_path):
+                    os.remove(old_path)
             image_url = None
 
         image_file = request.files.get("image")
         if image_file and image_file.filename:
-            # มีไฟล์รูปใหม่ส่งมา — save ลง static/uploads/
-            import uuid, os
-            from werkzeug.utils import secure_filename
-
-            ALLOWED = {"jpg", "jpeg", "png", "webp", "gif"}
+            ALLOWED = {"jpg", "jpeg", "png", "webp"}
             ext = image_file.filename.rsplit(".", 1)[-1].lower()
 
             if ext not in ALLOWED:
@@ -538,14 +552,18 @@ def edit(pid):
                 conn.close()
                 return render_template("edit.html", product=product)
 
-            # สร้างชื่อไฟล์ unique
-            filename  = f"{uuid.uuid4().hex}.{ext}"
+            # ลบรูปเก่าก่อน upload รูปใหม่
+            if image_url:
+                old_path = os.path.join(app.static_folder, image_url.replace("/static/", ""))
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+
+            filename = f"{uuid.uuid4().hex}.{ext}"
             upload_dir = os.path.join(app.static_folder, "uploads")
             os.makedirs(upload_dir, exist_ok=True)
             image_file.save(os.path.join(upload_dir, filename))
             image_url = f"/static/uploads/{filename}"
 
-        # ── UPDATE database ───────────────────────────
         cur.execute("""
             UPDATE products
             SET
@@ -560,16 +578,9 @@ def edit(pid):
                 image_url       = %s
             WHERE id = %s
         """, (
-            company,
-            business,
-            fgcode,
-            core_product,
-            product_descrip,
-            size,
-            color,
-            weight,
-            image_url,
-            pid,
+            company, business, fgcode, core_product,
+            product_descrip, size, color, weight,
+            image_url, pid,
         ))
 
         conn.commit()
@@ -586,77 +597,58 @@ def edit(pid):
         flash(f"เกิดข้อผิดพลาด: {str(e)}", "error")
         return render_template("edit.html", product=product)
 
-@app.route("/product/add", methods=["GET","POST"])
+@app.route("/product/add", methods=["GET", "POST"])
 @login_required
-@role_required(["editor","admin"])
+@role_required(["editor", "admin"])
 def add():
     if request.method == "POST":
         conn = get_db()
         cur = conn.cursor()
 
-        cur.execute(""" 
+        cur.execute("""
             INSERT INTO products (
-                company,business,fgcode,core_product,product_descrip,
-                mit,mit_issue,mit_due,iso,iso_issue,iso_due,
-
-                tis,tis_issue,tis_due,
-                tisi,tisi_issue,tisi_due,
-
-                cfp,cfp_issue,cfp_due,
-                cfo,cfo_issue,cfo_due,
-
-                factsheet,factsheet_issue,factsheet_due,
-
-                technicaldata,tech_issue,tech_due,
-
-                outline,outline_issue,outline_due,
-
-                typetest1,typetest1_issue,typetest1_due,
-                typetest2,typetest2_issue,typetest2_due,
-                typetest3,typetest3_issue,typetest3_due,
-                typetest4,typetest4_issue,typetest4_due,
-                typetest5,typetest5_issue,typetest5_due,
-
-                details,size,color,weight,
-            )
-            VALUES (
+                company, business, fgcode, core_product, product_descrip,
+                mit, mit_issue, mit_due,
+                iso, iso_issue, iso_due,
+                tis, tis_issue, tis_due,
+                tisi, tisi_issue, tisi_due,
+                cfp, cfp_issue, cfp_due,
+                cfo, cfo_issue, cfo_due,
+                factsheet, factsheet_issue, factsheet_due,
+                technicaldata, tech_issue, tech_due,
+                outline, outline_issue, outline_due,
+                typetest1, typetest1_issue, typetest1_due,
+                typetest2, typetest2_issue, typetest2_due,
+                typetest3, typetest3_issue, typetest3_due,
+                typetest4, typetest4_issue, typetest4_due,
+                typetest5, typetest5_issue, typetest5_due,
+                details, size, color, weight
+            ) VALUES (
                 %s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,
-
-                %s,%s,%s,
-                %s,%s,%s,
-
-                %s,%s,%s,
-                %s,%s,%s,
-
-                %s,%s,%s,
-
-                %s,%s,%s,
-
-                %s,%s,%s,
-
-                %s,%s,%s,
-                %s,%s,%s,
-                %s,%s,%s,
-                %s,%s,%s,
-                %s,%s,%s,
-
+                %s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s
             )
         """, (
             request.form["company"],
             request.form["business"],
             request.form["fgcode"],
-            request.form["core_product"],     
-            request.form["product_descrip"],
+            request.form["core_product"],
+            request.form.get("product_descrip") or None,
 
-            request.form["mit"],
-            request.form["mit_issue"] or None,
-            request.form["mit_due"] or None,
+            request.form.get("mit"),
+            request.form.get("mit_issue") or None,
+            request.form.get("mit_due") or None,
 
-            request.form["iso"],
-            request.form["iso_issue"] or None,
-            request.form["iso_due"] or None,
+            request.form.get("iso"),
+            request.form.get("iso_issue") or None,
+            request.form.get("iso_due") or None,
 
             request.form.get("tis"),
             request.form.get("tis_issue") or None,
@@ -706,15 +698,16 @@ def add():
             request.form.get("typetest5_issue") or None,
             request.form.get("typetest5_due") or None,
 
-            request.form.get("details"),
-            request.form.get("size"),
-            request.form.get("color"),
-            request.form.get("weight"),
+            request.form.get("details") or None,
+            request.form.get("size") or None,
+            request.form.get("color") or None,
+            request.form.get("weight") or None,
         ))
+
         conn.commit()
         cur.close()
         conn.close()
-
+        flash("เพิ่มผลิตภัณฑ์เรียบร้อยแล้ว", "success")
         return redirect(url_for("products"))
 
     return render_template("add.html")

@@ -1,0 +1,488 @@
+นี่คือโค้ดทั้งหมดที่แยกเป็น 3 ส่วนชัดเจน เอาไปแทนที่ของเดิมได้เลย
+ส่วนที่ 1 — CSS (เพิ่มใน <style>)
+css/* ── ISO BADGES ── */
+.iso-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: center;
+    align-items: center;
+}
+
+.ibadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: default;
+    font-family: 'Sarabun', sans-serif;
+}
+
+.ibadge .idot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ib-g  { background: #eaf7e8; color: #276621; border: 1px solid #b6e6b0; }
+.ib-g  .idot { background: #51b74b; }
+.ib-y  { background: #fffbe6; color: #7a6200; border: 1px solid #ffe58f; }
+.ib-y  .idot { background: #e6b800; }
+.ib-o  { background: #fff3e8; color: #8a3c00; border: 1px solid #ffc68a; }
+.ib-o  .idot { background: #fa6d09; }
+.ib-r  { background: #fef0f0; color: #8a1c1c; border: 1px solid #f5b7b7; }
+.ib-r  .idot { background: #e74c3c; }
+.ib-gy {
+    background: #f7f9fc;
+    color: #7a8fa6;
+    border: 1px solid #e2e8f0;
+}
+.ib-gy .idot { background: #b0bec5; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 9px 24px 10px;
+    background: var(--grey-bg);
+    border-bottom: 1.5px solid var(--grey-bd);
+}
+
+.filter-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.fc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    border: 1.5px solid var(--grey-bd);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    font-family: 'Sarabun', sans-serif;
+    transition: all .15s;
+    user-select: none;
+}
+
+.fc-chip:hover { border-color: var(--blue); color: var(--blue-dk); }
+.fc-chip.active { background: var(--blue); border-color: var(--blue); color: var(--white); }
+
+.chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--blue);
+    flex-shrink: 0;
+    transition: background .15s;
+}
+
+.fc-chip.active .chip-dot { background: rgba(255,255,255,.65); }
+
+.fc-divider { width: 1px; height: 20px; background: var(--grey-bd); margin: 0 4px; }
+
+.fc-clear {
+    padding: 4px 11px;
+    border-radius: 16px;
+    border: 1.5px solid var(--grey-bd);
+    background: transparent;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Sarabun', sans-serif;
+    font-weight: 600;
+    transition: all .15s;
+}
+
+.fc-clear:hover { border-color: #e74c3c; color: #e74c3c; }
+
+.fc-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.fc-count b { color: var(--blue); }
+
+ส่วนที่ 2 — HTML
+แทนที่บล็อก toolbar + table เดิมทั้งหมด:
+html<!-- TOOLBAR -->
+<div class="toolbar">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <h2 class="page-title">Product List</h2>
+        <div class="search-wrap">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round">
+                <circle cx="8.5" cy="8.5" r="5.5" />
+                <line x1="13.5" y1="13.5" x2="18" y2="18" />
+            </svg>
+            <input id="searchInput" placeholder="Search..." onkeyup="globalSearch()">
+        </div>
+    </div>
+    <div class="toolbar-right">
+        <button class="btn btn-excel" onclick="exportExcel()">Export Excel</button>
+        <button class="btn btn-pdf"   onclick="exportPDF()">Export PDF</button>
+        {% if session.role in ["editor","admin"] %}
+        <a class="btn btn-add" href="{{ url_for('add') }}">＋ Add Product</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+    <span class="filter-label">แสดงเฉพาะที่มี :</span>
+
+    <span class="fc-chip" data-key="mit"     onclick="toggleChip(this)"><span class="chip-dot"></span>MiT</span>
+    <span class="fc-chip" data-key="iso9001" onclick="toggleChip(this)"><span class="chip-dot"></span>ISO 9001</span>
+    <span class="fc-chip" data-key="iso14001"onclick="toggleChip(this)"><span class="chip-dot"></span>ISO 14001</span>
+    <span class="fc-chip" data-key="iso45001"onclick="toggleChip(this)"><span class="chip-dot"></span>ISO 45001</span>
+    <span class="fc-chip" data-key="tis"     onclick="toggleChip(this)"><span class="chip-dot"></span>มอก.</span>
+    <span class="fc-chip" data-key="tisi"    onclick="toggleChip(this)"><span class="chip-dot"></span>สมอ.</span>
+    <span class="fc-chip" data-key="fs"      onclick="toggleChip(this)"><span class="chip-dot"></span>Factsheet</span>
+
+    <span class="fc-divider"></span>
+    <button class="fc-clear" onclick="clearChips()">ล้างทั้งหมด</button>
+    <span class="fc-count">แสดง <b id="fcVisible">0</b> / <span id="fcTotal">0</span> รายการ</span>
+</div>
+
+<!-- TABLE -->
+<div class="table-scroll">
+    <table id="productTable">
+        <colgroup>
+            <col class="c-id">
+            <col class="c-co">
+            <col class="c-biz">
+            <col class="c-fg">
+            <col class="c-core">
+            <col class="c-desc">
+            <col class="c-doc"><!-- MiT -->
+            <col class="c-doc"><!-- มอก -->
+            <col class="c-doc"><!-- สมอ -->
+            <col style="width:200px"><!-- ISO (กว้างขึ้นสำหรับ badges) -->
+            <col class="c-doc"><!-- Factsheet -->
+        </colgroup>
+
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">ID <span class="sort-arrow">⇅</span></th>
+                <th onclick="sortTable(1)">Company <span class="sort-arrow">⇅</span></th>
+                <th onclick="sortTable(2)">Business <span class="sort-arrow">⇅</span></th>
+                <th onclick="sortTable(3)">FG Code <span class="sort-arrow">⇅</span></th>
+                <th onclick="sortTable(4)">Core Product <span class="sort-arrow">⇅</span></th>
+                <th onclick="sortTable(5)">Product Description <span class="sort-arrow">⇅</span></th>
+                <th>MiT</th>
+                <th>มอก.</th>
+                <th>สมอ.</th>
+                <th>ISO Certifications</th>
+                <th>Factsheet</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody">
+            {% for p in products %}
+            <tr class="clickable-row" data-href="/product/{{ p.id }}"
+                data-mit="{{ 'y' if p.mit else '' }}"
+                data-tis="{{ 'y' if p.tis else '' }}"
+                data-tisi="{{ 'y' if p.tisi else '' }}"
+                data-fs="{{ 'y' if p.factsheet else '' }}"
+                data-iso9001="{{ 'y' if p.iso_9001 else '' }}"
+                data-iso14001="{{ 'y' if p.iso_14001 else '' }}"
+                data-iso45001="{{ 'y' if p.iso_45001 else '' }}">
+
+                <td>{{ loop.index }}</td>
+                <td>{{ p.company }}</td>
+                <td>{{ p.business }}</td>
+                <td><span class="fg-tag">{{ p.fgcode }}</span></td>
+                <td class="td-l">{{ p.core_product }}</td>
+                <td class="td-l">{{ p.product_descrip }}</td>
+
+                <!-- MiT dot -->
+                <td>
+                    <span class="sdot" data-due="{{ p.mit_due or '' }}"
+                        data-label="MiT" data-num="{{ p.mit or '—' }}"></span>
+                </td>
+
+                <!-- มอก dot -->
+                <td>
+                    <span class="sdot" data-due="{{ p.tis_due or '' }}"
+                        data-label="มอก" data-num="{{ p.tis or '—' }}"></span>
+                </td>
+
+                <!-- สมอ dot -->
+                <td>
+                    <span class="sdot" data-due="{{ p.tisi_due or '' }}"
+                        data-label="สมอ" data-num="{{ p.tisi or '—' }}"></span>
+                </td>
+
+                <!-- ISO badges -->
+                <td>
+                    <div class="iso-cell">
+                        {% set iso_list = [
+                            ('9001',  p.iso_9001,  p.iso_9001_due),
+                            ('14001', p.iso_14001, p.iso_14001_due),
+                            ('45001', p.iso_45001, p.iso_45001_due),
+                        ] %}
+                        {% set has_any = namespace(val=false) %}
+                        {% for std, num, due in iso_list %}
+                            {% if num %}
+                                {% set has_any.val = true %}
+                                <span class="ibadge"
+                                    data-std="{{ std }}"
+                                    data-due="{{ due or '' }}"
+                                    data-label="ISO {{ std }}"
+                                    data-num="{{ num }}">
+                                    <span class="idot"></span>ISO {{ std }}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not has_any.val %}
+                            <span style="color:var(--muted);font-size:12px">—</span>
+                        {% endif %}
+                    </div>
+                </td>
+
+                <!-- Factsheet dot -->
+                <td>
+                    <span class="sdot" data-due="{{ p.factsheet_due or '' }}"
+                        data-label="Factsheet" data-num="{{ p.factsheet or '—' }}"></span>
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+ส่วนที่ 3 — JavaScript
+แทนที่บล็อก <script> เดิมทั้งหมด:
+javascript/* ── HELPERS ── */
+const today = new Date(); today.setHours(0,0,0,0);
+
+function daysLeft(due) {
+    if (!due || due === 'None' || !due.trim()) return null;
+    const d = new Date(due + 'T00:00:00');
+    if (isNaN(d)) return null;
+    return Math.ceil((d - today) / 86400000);
+}
+
+function dotColorClass(rem) {
+    if (rem === null) return 's-grey';
+    if (rem <= 0)   return 's-red';
+    if (rem <= 60)  return 's-orange';
+    if (rem <= 120) return 's-yellow';
+    return 's-green';
+}
+
+function badgeColorClass(rem) {
+    if (rem === null) return 'ib-gy';
+    if (rem <= 0)   return 'ib-r';
+    if (rem <= 60)  return 'ib-o';
+    if (rem <= 120) return 'ib-y';
+    return 'ib-g';
+}
+
+function fmtDate(due) {
+    if (!due || due === 'None') return 'ไม่มีข้อมูล';
+    const d = new Date(due + 'T00:00:00');
+    return isNaN(d) ? 'ไม่มีข้อมูล'
+        : d.toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function buildTip(label, num, due) {
+    const rem = daysLeft(due);
+    const st  = rem === null ? 'ไม่มีข้อมูล'
+              : rem <= 0    ? '⚠ หมดอายุแล้ว'
+              : `เหลือ ${rem} วัน`;
+    return `${label}  |  ${num || '—'}\nหมดอายุ : ${fmtDate(due)}\n${st}`;
+}
+
+/* ── INIT DOTS (เดิม) ── */
+function initDots() {
+    document.querySelectorAll('.sdot').forEach(dot => {
+        const rem = daysLeft(dot.dataset.due);
+        dot.classList.add(dotColorClass(rem));
+        dot.setAttribute('data-tip', buildTip(
+            dot.dataset.label, dot.dataset.num, dot.dataset.due));
+    });
+}
+
+/* ── INIT ISO BADGES (ใหม่) ── */
+function initIsoBadges() {
+    document.querySelectorAll('.ibadge').forEach(badge => {
+        const rem = daysLeft(badge.dataset.due);
+        badge.classList.add(badgeColorClass(rem));
+
+        // inject dot color
+        const dot = badge.querySelector('.idot');
+        const colors = { 'ib-g':'#51b74b','ib-y':'#e6b800','ib-o':'#fa6d09','ib-r':'#e74c3c','ib-gy':'#b0bec5' };
+        const cls = badgeColorClass(rem);
+        if (dot) dot.style.background = colors[cls] || '#b0bec5';
+
+        badge.setAttribute('data-tip', buildTip(
+            'ISO ' + badge.dataset.std, badge.dataset.num, badge.dataset.due));
+    });
+}
+
+/* ── FILTER CHIPS ── */
+const activeFilters = new Set();
+
+function toggleChip(el) {
+    const key = el.dataset.key;
+    el.classList.toggle('active');
+    activeFilters.has(key) ? activeFilters.delete(key) : activeFilters.add(key);
+    applyFilters();
+}
+
+function clearChips() {
+    activeFilters.clear();
+    document.querySelectorAll('.fc-chip').forEach(c => c.classList.remove('active'));
+    applyFilters();
+}
+
+function applyFilters() {
+    document.querySelectorAll('#tableBody tr').forEach(row => {
+        if (activeFilters.size === 0) {
+            row.dataset.chipHide = '0';
+            return;
+        }
+        const pass = [...activeFilters].every(key => {
+            // ISO standards — ตรวจจาก data attribute ของ row
+            if (key.startsWith('iso')) {
+                return row.dataset[key] === 'y';
+            }
+            // dot-based: mit, tis, tisi, fs
+            return row.dataset[key] === 'y';
+        });
+        row.dataset.chipHide = pass ? '0' : '1';
+    });
+    updateCount();
+    currentPage = 1;
+    paginate();
+}
+
+function updateCount() {
+    const all  = document.querySelectorAll('#tableBody tr').length;
+    const show = [...document.querySelectorAll('#tableBody tr')]
+        .filter(r => r.dataset.chipHide !== '1' && r.dataset.hide !== '1').length;
+    document.getElementById('fcVisible').textContent = show;
+    document.getElementById('fcTotal').textContent   = all;
+}
+
+/* ── SEARCH (เดิม แต่ update count ด้วย) ── */
+function globalSearch() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    document.querySelectorAll('#tableBody tr').forEach(r => {
+        r.dataset.hide = r.innerText.toLowerCase().includes(q) ? '0' : '1';
+    });
+    currentPage = 1;
+    paginate();
+    updateCount();
+}
+
+/* ── SORT (เดิม) ── */
+let sortDir = true;
+function sortTable(n) {
+    const tbody = document.getElementById('tableBody');
+    const rows  = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+        const x = a.cells[n].innerText.trim().toLowerCase();
+        const y = b.cells[n].innerText.trim().toLowerCase();
+        const nx = parseFloat(x), ny = parseFloat(y);
+        if (!isNaN(nx) && !isNaN(ny)) return sortDir ? nx - ny : ny - nx;
+        return sortDir ? x.localeCompare(y, 'th') : y.localeCompare(x, 'th');
+    });
+    rows.forEach(r => tbody.appendChild(r));
+    sortDir = !sortDir;
+    paginate();
+}
+
+/* ── PAGINATION (เดิม) ── */
+let currentPage = 1, rowsPerPage = 10;
+
+function vis() {
+    return [...document.querySelectorAll('#tableBody tr')]
+        .filter(r => r.dataset.hide !== '1' && r.dataset.chipHide !== '1');
+}
+
+function paginate() {
+    const rows = vis();
+    const max  = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+    if (currentPage > max) currentPage = max;
+    const s = (currentPage - 1) * rowsPerPage, e = s + rowsPerPage;
+    document.querySelectorAll('#tableBody tr').forEach(r => r.style.display = 'none');
+    rows.forEach((r, i) => r.style.display = (i >= s && i < e) ? '' : 'none');
+    renderPg(max);
+}
+
+function renderPg(max) {
+    const c = document.getElementById('paginationNumbers');
+    c.innerHTML = '';
+    const add = (lbl, en, fn, active = false) => {
+        if (lbl === '…') {
+            const s = document.createElement('span');
+            s.className = 'pg-ell'; s.textContent = '…';
+            c.appendChild(s); return;
+        }
+        const b = document.createElement('button');
+        b.className = 'pg-btn' + (active ? ' pg-on' : '');
+        b.textContent = lbl; b.disabled = !en;
+        if (en) b.onclick = fn;
+        c.appendChild(b);
+    };
+    add('‹', currentPage > 1, () => go(currentPage - 1));
+    const rng = (() => {
+        if (max <= 7) return Array.from({length: max}, (_, i) => i + 1);
+        if (currentPage <= 4) return [1,2,3,4,5,'…',max];
+        if (currentPage >= max-3) return [1,'…',max-4,max-3,max-2,max-1,max];
+        return [1,'…',currentPage-1,currentPage,currentPage+1,'…',max];
+    })();
+    rng.forEach(v => v === '…' ? add('…') : add(v, true, () => go(v), v === currentPage));
+    add('›', currentPage < max, () => go(currentPage + 1));
+}
+
+function go(n) { currentPage = n; paginate(); }
+
+function changePageSize() {
+    rowsPerPage = +document.getElementById('rowsPerPage').value;
+    currentPage = 1; paginate();
+}
+
+/* ── EXPORT ── */
+function exportExcel() {
+    const b = new Blob(['\ufeff' + document.getElementById('productTable').outerHTML],
+        { type: 'application/vnd.ms-excel;charset=utf-8' });
+    Object.assign(document.createElement('a'),
+        { href: URL.createObjectURL(b), download: 'products.xls' }).click();
+}
+function exportPDF() { window.print(); }
+
+/* ── ROW CLICK ── */
+function initRows() {
+    document.querySelectorAll('.clickable-row').forEach(r => {
+        r.addEventListener('click', () => location.href = r.dataset.href);
+    });
+}
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+    initDots();
+    initIsoBadges();
+    initRows();
+    updateCount();
+    paginate();
+});
