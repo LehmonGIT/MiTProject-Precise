@@ -596,6 +596,17 @@ def edit(pid):
         conn.close()
         flash(f"เกิดข้อผิดพลาด: {str(e)}", "error")
         return render_template("edit.html", product=product)
+    
+@app.route("/check-db/<int:pid>")
+def check_db(pid):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id, company, core_product, image_url FROM products WHERE id=%s", (pid,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    return f"<pre>{row}</pre>"
+
 
 @app.route("/product/add", methods=["GET", "POST"])
 @login_required
